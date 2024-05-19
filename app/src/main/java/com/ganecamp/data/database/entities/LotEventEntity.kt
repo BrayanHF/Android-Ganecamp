@@ -1,0 +1,30 @@
+package com.ganecamp.data.database.entities
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import java.time.ZonedDateTime
+
+@Entity(
+    tableName = "lot_event_table",
+    primaryKeys = ["lot_id", "event_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = LotEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["lot_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["event_id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class LotEventEntity(
+    @ColumnInfo(name = "lot_id") val lotId: String,
+    @ColumnInfo(name = "event_id") val eventId: String,
+    @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime
+)

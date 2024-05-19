@@ -7,19 +7,26 @@ import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
 
 @Entity(
-    tableName = "weight_table",
+    tableName = "animal_vaccine_table",
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
             parentColumns = ["tag"],
             childColumns = ["animal_tag"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = VaccineEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["vaccine_id"],
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class WeightEntity(
-    @PrimaryKey @ColumnInfo(name = "id") val id: String,
+data class VaccineApplicationEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "animal_tag") val animalId: String,
-    @ColumnInfo(name = "weight") val weight: Float,
-    @ColumnInfo(name = "date") val date: ZonedDateTime
+    @ColumnInfo(name = "vaccine_id") val vaccineId: String,
+    @ColumnInfo(name = "application_date") val applicationDate: ZonedDateTime
 )
