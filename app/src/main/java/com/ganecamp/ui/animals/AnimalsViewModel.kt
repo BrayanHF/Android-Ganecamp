@@ -1,4 +1,4 @@
-package com.ganecamp.ui.main
+package com.ganecamp.ui.animals
 
 import androidx.lifecycle.ViewModel
 
