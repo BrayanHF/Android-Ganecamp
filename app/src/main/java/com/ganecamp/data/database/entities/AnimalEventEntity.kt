@@ -3,11 +3,11 @@ package com.ganecamp.data.database.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
 
 @Entity(
     tableName = "animal_event_table",
-    primaryKeys = ["animal_id", "event_id"],
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
@@ -24,6 +24,8 @@ import java.time.ZonedDateTime
     ]
 )
 data class AnimalEventEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "animal_tag") val animalId: String,
     @ColumnInfo(name = "event_id") val eventId: String,
     @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime
