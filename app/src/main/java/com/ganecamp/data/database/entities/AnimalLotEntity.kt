@@ -23,7 +23,7 @@ import androidx.room.PrimaryKey
     ]
 )
 data class AnimalLotEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     @ColumnInfo(name = "animal_id") val animalId: Int,
     @ColumnInfo(name = "lot_id") val lotId: Int
 )

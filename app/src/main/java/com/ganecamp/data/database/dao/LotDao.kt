@@ -13,9 +13,10 @@ interface LotDao {
     @Query(
         """
         SELECT 
-            lot_id AS id, 
-            COUNT(animal_id) AS animalCount
-        FROM animal_lot_table 
+            alt.lot_id AS id, 
+            COUNT(alt.animal_id) AS animalCount
+        FROM animal_lot_table AS alt
+        LEFT JOIN lot_table AS l ON alt.lot_id = l.id
         GROUP BY lot_id
         """
     )
