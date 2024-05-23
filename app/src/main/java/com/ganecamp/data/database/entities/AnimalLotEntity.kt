@@ -4,23 +4,26 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import java.time.ZonedDateTime
 
 @Entity(
-    tableName = "weight_table",
+    tableName = "animal_lot_table",
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
             parentColumns = ["id"],
             childColumns = ["animal_id"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = LotEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["lot_id"],
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class WeightEntity(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id") val id: Int,
+data class AnimalLotEntity(
+    @PrimaryKey
     @ColumnInfo(name = "animal_id") val animalId: Int,
-    @ColumnInfo(name = "weight") val weight: Float,
-    @ColumnInfo(name = "date") val date: ZonedDateTime
+    @ColumnInfo(name = "lot_id") val lotId: Int
 )

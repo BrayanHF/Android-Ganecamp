@@ -7,20 +7,26 @@ import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
 
 @Entity(
-    tableName = "weight_table",
+    tableName = "animal_event_table",
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
             parentColumns = ["id"],
             childColumns = ["animal_id"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["event_id"],
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class WeightEntity(
+data class AnimalEventEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id") val id: Int,
     @ColumnInfo(name = "animal_id") val animalId: Int,
-    @ColumnInfo(name = "weight") val weight: Float,
-    @ColumnInfo(name = "date") val date: ZonedDateTime
+    @ColumnInfo(name = "event_id") val eventId: Int,
+    @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime
 )

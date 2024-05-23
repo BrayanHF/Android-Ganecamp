@@ -3,4 +3,12 @@
     <string name="animals">Animales</string>
     <string name="lots">Lotes</string>
     <string name="scan">Escanear</string>
+    <string name="male">Macho</string>
+    <string name="female">Hembra</string>
+    <string name="animal_icon">Icono de Animal</string>
+    <string name="healthy">Saludable</string>
+    <string name="sick">Enfermo</string>
+    <string name="injured">Herido</string>
+    <string name="dead">Muerto</string>
+    <string name="sold">Vendido</string>
 </resources>
