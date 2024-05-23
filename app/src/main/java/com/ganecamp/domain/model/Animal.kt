@@ -7,10 +7,10 @@ import com.ganecamp.utilities.enums.State
 
 data class Animal(
     val tag: String,
-    val id: String,
+    val id: Int,
     val gender: Gender,
     val state: State,
-    val lodId: String
+    val lotId: Int
 )
 
 fun SimpleAnimalData.toDomain() = Animal(tag, id, gender, state, lotId)

@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 
 data class AnimalDetail(
     val tag: String,
-    val id: String,
+    val id: Int,
     val gender: Gender,
     val birthDate: ZonedDateTime,
     val purchaseValue: Double,

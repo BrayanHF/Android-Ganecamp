@@ -11,16 +11,16 @@ import java.time.ZonedDateTime
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
-            parentColumns = ["tag"],
-            childColumns = ["animal_tag"],
+            parentColumns = ["id"],
+            childColumns = ["animal_id"],
             onDelete = ForeignKey.CASCADE
         )
     ]
 )
 data class WeightEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "id") val id: String,
-    @ColumnInfo(name = "animal_tag") val animalId: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Int,
+    @ColumnInfo(name = "animal_id") val animalId: Int,
     @ColumnInfo(name = "weight") val weight: Float,
     @ColumnInfo(name = "date") val date: ZonedDateTime
 )

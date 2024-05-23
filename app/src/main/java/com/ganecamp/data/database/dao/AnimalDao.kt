@@ -17,9 +17,9 @@ interface AnimalDao {
             a.id AS id,
             a.gender AS gender,
             a.state AS state,
-            IFNULL(al.lot_id, "") AS lotId
+            IFNULL(al.lot_id, 0) AS lotId
         FROM animal_table AS a
-        LEFT JOIN animal_lot_table AS al ON a.tag = al.animal_tag
+        LEFT JOIN animal_lot_table AS al ON a.id = al.animal_id
         """
     )
     suspend fun getAllAnimals(): List<SimpleAnimalData>

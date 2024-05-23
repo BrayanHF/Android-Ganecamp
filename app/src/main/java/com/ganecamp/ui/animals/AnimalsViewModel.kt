@@ -11,6 +11,7 @@ import com.ganecamp.domain.services.AnimalService
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,32 +25,17 @@ class AnimalsViewModel @Inject constructor(private val animalService: AnimalServ
     private val _animals = MutableLiveData<List<Animal>>()
     val animals: LiveData<List<Animal>> = _animals
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
     init {
         loadAnimals()
     }
 
     private fun loadAnimals() {
-
         viewModelScope.launch {
-            animalService.deleteAllAnimals()
-
-            animalService.insertAnimal(
-                AnimalDetail(
-                    "1", "1", Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
-                )
-            )
-            animalService.insertAnimal(
-                AnimalDetail(
-                    "2", "2", Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
-                )
-            )
-            animalService.insertAnimal(
-                AnimalDetail(
-                    "3", "3", Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
-                )
-            )
-
             _animals.value = animalService.getAllAnimals()
+            _isLoading.value = false
         }
     }
 }

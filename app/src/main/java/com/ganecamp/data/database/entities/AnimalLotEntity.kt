@@ -10,8 +10,8 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
-            parentColumns = ["tag"],
-            childColumns = ["animal_tag"],
+            parentColumns = ["id"],
+            childColumns = ["animal_id"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
@@ -23,7 +23,7 @@ import androidx.room.PrimaryKey
     ]
 )
 data class AnimalLotEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "animal_tag") val animalTag: String,
-    @ColumnInfo(name = "lot_id") val lotId: String
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "animal_id") val animalId: Int,
+    @ColumnInfo(name = "lot_id") val lotId: Int
 )

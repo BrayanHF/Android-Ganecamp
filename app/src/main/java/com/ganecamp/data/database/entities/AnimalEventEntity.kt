@@ -11,8 +11,8 @@ import java.time.ZonedDateTime
     foreignKeys = [
         ForeignKey(
             entity = AnimalEntity::class,
-            parentColumns = ["tag"],
-            childColumns = ["animal_tag"],
+            parentColumns = ["id"],
+            childColumns = ["animal_id"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
@@ -24,9 +24,9 @@ import java.time.ZonedDateTime
     ]
 )
 data class AnimalEventEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "id") val id: String,
-    @ColumnInfo(name = "animal_tag") val animalId: String,
-    @ColumnInfo(name = "event_id") val eventId: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Int,
+    @ColumnInfo(name = "animal_id") val animalId: Int,
+    @ColumnInfo(name = "event_id") val eventId: Int,
     @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime
 )

@@ -12,13 +12,13 @@ import java.time.ZonedDateTime
 @Entity(
     tableName = "animal_table",
     indices = [
-        Index(value = ["id"], unique = true)
+        Index(value = ["tag"], unique = true)
     ]
 )
 data class AnimalEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Int,
     @ColumnInfo(name = "tag") val tag: String,
-    @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "gender") val gender: Gender,
     @ColumnInfo(name = "birth_date") val birthDate: ZonedDateTime,
     @ColumnInfo(name = "purchase_value") val purchaseValue: Double,
@@ -26,4 +26,4 @@ data class AnimalEntity(
     @ColumnInfo(name = "state") val state: State
 )
 
-fun AnimalDetail.toEntity() = AnimalEntity(tag, id, gender, birthDate, purchaseValue, saleValue, state)
+fun AnimalDetail.toEntity() = AnimalEntity(id, tag, gender, birthDate, purchaseValue, saleValue, state)
