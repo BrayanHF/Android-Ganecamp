@@ -34,8 +34,14 @@ class AnimalsViewModel @Inject constructor(private val animalService: AnimalServ
 
     private fun loadAnimals() {
         viewModelScope.launch {
-            _animals.value = animalService.getAllAnimals()
-            _isLoading.value = false
+            animalService.deleteAllAnimals()
+
+//            animalService.insertAnimal(AnimalDetail("2323", 1, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy))
+
+//            _animals.value = animalService.getAllAnimals()
+//            _isLoading.value = false
         }
     }
+
+
 }

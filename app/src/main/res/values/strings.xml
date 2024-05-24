@@ -11,4 +11,6 @@
     <string name="injured">Herido</string>
     <string name="dead">Muerto</string>
     <string name="sold">Vendido</string>
+    <string name="no_lots">No hay lotes registrados</string>
+    <string name="no_animals">No hay animales registrados</string>
 </resources>

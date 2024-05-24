@@ -57,9 +57,18 @@ fun AnimalScreen(navController: NavHostController) {
 
 @Composable
 fun AnimalList(navController: NavHostController, animals: List<Animal>) {
-    LazyColumn(verticalArrangement = Arrangement.Top) {
-        items(animals) { animal ->
-            AnimalItem(navController, animal)
+    if (animals.isEmpty()) {
+        Column {
+            Text(
+                text = stringResource(id = R.string.no_animals),
+                style = Typography.bodyLarge
+            )
+        }
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.Top) {
+            items(animals) { animal ->
+                AnimalItem(navController, animal)
+            }
         }
     }
 }
@@ -74,7 +83,7 @@ fun IsLoading() {
 @Composable
 fun AnimalItem(navController: NavHostController, animal: Animal) {
     Surface(
-        tonalElevation = 16.dp,
+//        tonalElevation = 16.dp,
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .padding(0.dp, 4.dp)

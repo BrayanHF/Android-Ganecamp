@@ -27,6 +27,14 @@ object RoomModule {
 
     @Singleton
     @Provides
-    fun privideLotDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getLotDao()
+    fun provideLotDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getLotDao()
+
+    @Singleton
+    @Provides
+    fun provideVaccineDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getVaccineDao()
+
+    @Singleton
+    @Provides
+    fun provideEventDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getEventDao()
 
 }
