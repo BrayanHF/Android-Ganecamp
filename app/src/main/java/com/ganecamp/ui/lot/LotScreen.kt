@@ -68,9 +68,8 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(lots.size) {
             LotItem(navController, lots[it])
@@ -83,9 +82,7 @@ fun LotItem(navController: NavController, lot: Lot) {
     Surface(
         onClick = {},
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .padding(0.dp, 4.dp)
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         shadowElevation = 4.dp,
         color = White
     ) {
@@ -93,7 +90,6 @@ fun LotItem(navController: NavController, lot: Lot) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(LightGreenAlpha)
-
         ) {
             val (id, animalCount, bottomLine) = createRefs()
 

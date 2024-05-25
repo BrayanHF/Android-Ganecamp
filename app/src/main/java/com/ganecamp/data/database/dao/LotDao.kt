@@ -13,11 +13,11 @@ interface LotDao {
     @Query(
         """
         SELECT 
-            alt.lot_id AS id, 
+            l.id AS id, 
             COUNT(alt.animal_id) AS animalCount
-        FROM animal_lot_table AS alt
-        LEFT JOIN lot_table AS l ON alt.lot_id = l.id
-        GROUP BY lot_id
+        FROM lot_table AS l
+        LEFT JOIN animal_lot_table AS alt ON alt.lot_id = l.id
+        GROUP BY l.id
         """
     )
     suspend fun getAllLots(): List<SimpleLotData>
