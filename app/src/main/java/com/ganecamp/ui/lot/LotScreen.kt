@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,9 +22,12 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.domain.model.Lot
-import com.ganecamp.ui.animals.IsLoading
 import com.ganecamp.ui.theme.*
 import com.ganecamp.R
+import com.ganecamp.ui.general.GeneralBox
+import com.ganecamp.ui.general.GeneralSurface
+import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.general.NoRegistered
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -34,12 +35,7 @@ fun LotScreen(navController: NavController) {
     val lots by viewModel.lots.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .background(White)
-    ) {
+    GeneralBox {
         if (isLoading) {
             IsLoading()
         } else {
@@ -51,25 +47,22 @@ fun LotScreen(navController: NavController) {
 @Composable
 fun LotList(navController: NavController, lots: List<Lot>) {
     if (lots.isEmpty()) {
-        Column {
-            Text(
-                text = stringResource(id = R.string.no_lots),
-                style = Typography.bodyLarge
-            )
-        }
+        NoRegistered(textId = R.string.no_lots)
         return
     }
 
-    val configuration = LocalConfiguration.current
-    val columns = when (configuration.orientation) {
-        Configuration.ORIENTATION_LANDSCAPE -> 4
-        else -> 2
-    }
+    val columns: Int =
+        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            4
+        } else {
+            2
+        }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.padding(8.dp)
     ) {
         items(lots.size) {
             LotItem(navController, lots[it])
@@ -79,13 +72,7 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 
 @Composable
 fun LotItem(navController: NavController, lot: Lot) {
-    Surface(
-        onClick = {},
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxSize(),
-        shadowElevation = 4.dp,
-        color = White
-    ) {
+    GeneralSurface(onClick = { }) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,8 +87,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                     height = Dimension.value(44.dp)
-                },
-                verticalArrangement = Arrangement.Center
+                }, verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "ID: ${lot.id}",
@@ -117,8 +103,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                     height = Dimension.value(44.dp)
-                },
-                verticalArrangement = Arrangement.Center
+                }, verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = stringResource(id = R.string.animals) + ": ${lot.animalCount}",
@@ -135,8 +120,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     width = Dimension.fillToConstraints
                     height = Dimension.value(4.dp)
                 }
-                .background(DarkGreen)
-            )
+                .background(DarkGreen))
         }
     }
 }

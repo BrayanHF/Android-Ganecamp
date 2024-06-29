@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +23,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -33,6 +31,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.domain.model.Animal
 import com.ganecamp.R
+import com.ganecamp.ui.general.GeneralBox
+import com.ganecamp.ui.general.GeneralSurface
+import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import com.ganecamp.ui.theme.*
@@ -43,11 +45,7 @@ fun AnimalScreen(navController: NavHostController) {
     val animals by viewModel.animals.observeAsState(initial = emptyList())
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = true)
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
+    GeneralBox {
         if (isLoading) {
             IsLoading()
         } else {
@@ -59,24 +57,28 @@ fun AnimalScreen(navController: NavHostController) {
 @Composable
 fun AnimalList(navController: NavHostController, animals: List<Animal>) {
     if (animals.isEmpty()) {
-        Column {
-            Text(
-                text = stringResource(id = R.string.no_animals), style = Typography.bodyLarge
-            )
-        }
+        NoRegistered(textId = R.string.no_animals)
         return
     }
 
-    val configuration = LocalConfiguration.current
-    val columns = when (configuration.orientation) {
-        Configuration.ORIENTATION_LANDSCAPE -> 2
-        else -> 1
+    val columns: Int
+    val verticalSpace: Dp
+    val verticalGripPadding: Dp
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        columns = 2
+        verticalSpace = 16.dp
+        verticalGripPadding = 8.dp
+    } else {
+        columns = 1
+        verticalSpace = 8.dp
+        verticalGripPadding = 0.dp
     }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(verticalSpace),
+        modifier = Modifier.padding(verticalGripPadding)
     ) {
         items(animals.size) {
             AnimalItem(navController, animals[it])
@@ -85,21 +87,8 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
 }
 
 @Composable
-fun IsLoading() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
 fun AnimalItem(navController: NavHostController, animal: Animal) {
-    Surface(
-        onClick = {},
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxSize(),
-        shadowElevation = 4.dp,
-        color = White
-    ) {
+    GeneralSurface(onClick = { }) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
