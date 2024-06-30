@@ -44,5 +44,6 @@ class AnimalService @Inject constructor(private val animalDao: AnimalDao) {
         return date.format(formatter)
     }
 
+    suspend fun getAnimalById(animalId: Int): AnimalDetail = animalDao.getAnimalById(animalId).toDomain()
 
 }

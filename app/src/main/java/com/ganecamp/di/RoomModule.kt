@@ -37,4 +37,8 @@ object RoomModule {
     @Provides
     fun provideEventDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getEventDao()
 
+    @Singleton
+    @Provides
+    fun provideWeightDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getWeightDao()
+
 }

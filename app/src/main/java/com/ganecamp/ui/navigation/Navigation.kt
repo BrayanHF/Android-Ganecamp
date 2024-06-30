@@ -13,17 +13,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.ganecamp.ui.animals.AnimalDetailScreen
 import com.ganecamp.ui.animals.AnimalScreen
 import com.ganecamp.ui.lot.LotScreen
 import com.ganecamp.ui.scan.ScanScreen
-import com.ganecamp.ui.theme.*
+import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.DarkGreen
+import com.ganecamp.ui.theme.LightGreen
+import com.ganecamp.ui.theme.Typography
 
 @Composable
 fun Navigation() {
@@ -39,6 +44,17 @@ fun Navigation() {
             composable(Screen.Animal.route) { AnimalScreen(navController) }
             composable(Screen.Lot.route) { LotScreen(navController) }
             composable(Screen.Scan.route) { ScanScreen(navController) }
+            composable(
+                route = ScreenInternal.AnimalDetail.route,
+                arguments = listOf(
+                    navArgument("animalId") { type = NavType.IntType },
+                    navArgument("lotId") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
+                val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
+                AnimalDetailScreen(navController, animalId, lotId)
+            }
         }
     }
 }

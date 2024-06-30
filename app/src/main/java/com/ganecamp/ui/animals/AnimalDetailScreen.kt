@@ -10,30 +10,32 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Weight
 import com.ganecamp.ui.general.GeneralBox
+import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.theme.LightGreenAlpha
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.utilities.enums.Gender
@@ -42,32 +44,46 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 
-// TODO: parameters: NavHostController, animalId, lotId
-@Preview
 @Composable
-fun AnimalDetailScreen() {
-
-    val animalDetail =
-        AnimalDetail("1", 1, Gender.Female, ZonedDateTime.now(), 0.0, 0.0, State.Healthy)
-    val lotId = 1
+fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotId: Int) {
+    val viewModel: AnimalDetailViewModel = hiltViewModel()
+    val isLoading by viewModel.isLoading.observeAsState(initial = true)
+    val animalDetail: AnimalDetail by viewModel.animal.observeAsState(
+        initial = AnimalDetail(
+            "", 0, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
+        )
+    )
+    val vaccines: List<Description> by viewModel.vaccines.observeAsState(initial = emptyList())
+    val events: List<Description> by viewModel.events.observeAsState(initial = emptyList())
+    val weights: List<Weight> by viewModel.weights.observeAsState(initial = emptyList())
+    val age by viewModel.ageAnimal.observeAsState(initial = Triple(0, 0, 0))
 
     GeneralBox {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            AnimalInfo(animalDetail, lotId)
-//            AnimalVaccines()
-//            AnimalEvents()
-            AnimalWeights()
+        if (isLoading) {
+            IsLoading()
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                AnimalInfo(animalDetail, lotId, age)
+                if (vaccines.isNotEmpty()) {
+                    AnimalVaccines(vaccines)
+                }
+                if (events.isNotEmpty()) {
+                    AnimalEvents(events)
+                }
+                if (weights.isNotEmpty()) {
+                    AnimalWeights(weights)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
-    val edad: Triple<Int, Int, Int> = Triple(0, 2, 1)
+fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int, age: Triple<Int, Int, Int>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,7 +153,7 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
                     color = LightGreenAlpha
                 ) {
                     Text(
-                        text = "Lote: $lotId",
+                        text = stringResource(id = R.string.lot) + ": $lotId",
                         style = Typography.bodyMedium,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -168,7 +184,7 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
                     modifier = Modifier.padding(16.dp)
                 )
             }
-            if (edad.first != 0) {
+            if (age.first != 0) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = stringResource(id = R.string.years),
@@ -176,14 +192,14 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
                         modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
                     )
                     Text(
-                        text = edad.first.toString(),
+                        text = age.first.toString(),
                         style = Typography.bodyMedium,
                         modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
                     )
                 }
             }
 
-            if (edad.second != 0) {
+            if (age.second != 0) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = stringResource(id = R.string.months),
@@ -191,14 +207,14 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
                         modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
                     )
                     Text(
-                        text = edad.second.toString(),
+                        text = age.second.toString(),
                         style = Typography.bodyMedium,
                         modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
                     )
                 }
             }
 
-            if (edad.third != 0) {
+            if (age.third != 0) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = stringResource(id = R.string.days),
@@ -206,7 +222,7 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
                         modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
                     )
                     Text(
-                        text = edad.third.toString(),
+                        text = age.third.toString(),
                         style = Typography.bodyMedium,
                         modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
                     )
@@ -219,7 +235,9 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Compra:", style = Typography.bodyMedium, modifier = Modifier.padding(8.dp)
+                text = stringResource(id = R.string.buy) + ":",
+                style = Typography.bodyMedium,
+                modifier = Modifier.padding(8.dp)
             )
             Text(
                 text = animalDetail.purchaseValue.toString(),
@@ -228,74 +246,57 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int) {
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Venta", style = Typography.bodyMedium, modifier = Modifier.padding(8.dp)
+                text = stringResource(id = R.string.sale) + ":",
+                style = Typography.bodyMedium,
+                modifier = Modifier.padding(8.dp)
             )
             Text(
                 text = animalDetail.saleValue.toString(),
                 style = Typography.bodyMedium,
             )
         }
-
-
     }
 }
 
 @Composable
-fun AnimalVaccines(
-//    vaccines: List<Description>
-) {
+fun AnimalVaccines(vaccines: List<Description>) {
     Text(
         text = "Vaccines",
         style = Typography.bodyMedium,
         modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
     )
-    val descriptions = listOf(
-        Description("Vacuna 1", ZonedDateTime.now(), "Descripción 1"),
-        Description("Vacuna 1", ZonedDateTime.now(), "Descripción 1")
-    )
     LazyRow {
-        items(descriptions.size) {
-            DescriptionCard(description = descriptions[it])
+        items(vaccines.size) {
+            DescriptionCard(description = vaccines[it])
         }
 
     }
 }
 
 @Composable
-fun AnimalEvents(
-//    events: List<Description>
-) {
+fun AnimalEvents(events: List<Description>) {
     Text(
         text = "Events",
         style = Typography.bodyMedium,
         modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
     )
-    val descriptions = listOf(
-        Description("Event 1", ZonedDateTime.now(), "Descripción 1"),
-        Description("Event 1", ZonedDateTime.now(), "Descripción 1")
-    )
     LazyRow {
-        items(descriptions.size) {
-            DescriptionCard(description = descriptions[it])
+        items(events.size) {
+            DescriptionCard(description = events[it])
         }
     }
 }
 
 @Composable
-fun AnimalWeights() {
+fun AnimalWeights(weights: List<Weight>) {
     Text(
         text = "Pesos",
         style = Typography.bodyMedium,
         modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
     )
-    val weights = listOf(
-        Weight(1, 1, 100.0, ZonedDateTime.now()),
-        Weight(2, 1, 200.0, ZonedDateTime.now()),
-        Weight(3, 1, 300.0, ZonedDateTime.now())
-    )
-    LazyColumn() {
-        items(weights.size) {
-            WeightRow(weight = weights[it])
+    weights.forEach {
+        WeightRow(it)
+        if (it != weights.last()) {
             HorizontalDivider(thickness = 1.dp, color = Color.Gray)
         }
     }

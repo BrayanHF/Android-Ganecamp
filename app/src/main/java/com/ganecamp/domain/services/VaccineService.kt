@@ -2,6 +2,7 @@ package com.ganecamp.domain.services
 
 import com.ganecamp.data.database.dao.VaccineDao
 import com.ganecamp.data.database.entities.toEntity
+import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Vaccine
 import com.ganecamp.domain.model.toDomain
 import javax.inject.Inject
@@ -23,5 +24,11 @@ class VaccineService @Inject constructor(private val vaccineDao: VaccineDao) {
     suspend fun deleteVaccineById(id: Int) = vaccineDao.deleteVaccineById(id)
 
     suspend fun deleteAllVaccines() = vaccineDao.deleteAllVaccines()
+
+    suspend fun animalVaccines(animalId: Int): List<Description> {
+        return vaccineDao.animalVaccines(animalId).map { vaccineData ->
+            vaccineData.toDomain()
+        }
+    }
 
 }

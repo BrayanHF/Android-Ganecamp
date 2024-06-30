@@ -19,4 +19,7 @@
     <string name="birth_date">"Nacimiento: "</string>
     <string name="age">Edad</string>
     <string name="edit">Editar</string>
+    <string name="lot">Lote</string>
+    <string name="buy">Compra</string>
+    <string name="sale">Venta</string>
 </resources>

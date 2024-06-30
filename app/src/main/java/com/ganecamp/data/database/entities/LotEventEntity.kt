@@ -25,6 +25,7 @@ import java.time.ZonedDateTime
 )
 data class LotEventEntity(
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Int,
     @ColumnInfo(name = "lot_id") val lotId: Int,
     @ColumnInfo(name = "event_id") val eventId: Int,
     @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime

@@ -27,6 +27,9 @@ interface AnimalDao {
     @Query("SELECT * FROM animal_table WHERE tag = :tag")
     suspend fun getAnimalByTag(tag: String): AnimalEntity
 
+    @Query("SELECT * FROM animal_table WHERE id = :id")
+    suspend fun getAnimalById(id: Int): AnimalEntity
+
     @Insert
     suspend fun insertAnimal(animal: AnimalEntity)
 

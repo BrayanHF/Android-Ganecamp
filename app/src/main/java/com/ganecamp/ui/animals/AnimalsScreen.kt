@@ -29,21 +29,26 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.ganecamp.domain.model.Animal
 import com.ganecamp.R
+import com.ganecamp.domain.model.Animal
 import com.ganecamp.ui.general.GeneralBox
 import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.Green
+import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.ui.theme.Orange
+import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import com.ganecamp.ui.theme.*
 
 @Composable
 fun AnimalScreen(navController: NavHostController) {
     val viewModel: AnimalsViewModel = hiltViewModel()
     val animals by viewModel.animals.observeAsState(initial = emptyList())
-    val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = true)
+    val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
     GeneralBox {
         if (isLoading) {
@@ -88,7 +93,9 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
 
 @Composable
 fun AnimalItem(navController: NavHostController, animal: Animal) {
-    GeneralSurface(onClick = { }) {
+    GeneralSurface(onClick = {
+        navController.navigate("animalDetail/${animal.id}/${animal.lotId}")
+    }) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
@@ -220,8 +227,7 @@ fun AnimalItem(navController: NavHostController, animal: Animal) {
                     width = Dimension.fillToConstraints
                     height = Dimension.value(4.dp)
                 }
-                .background(colorState)
-            )
+                .background(colorState))
         }
     }
 }
