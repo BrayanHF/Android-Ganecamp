@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.ganecamp.data.database.entities.LotEntity
+import com.ganecamp.data.model.SimpleAnimalData
 import com.ganecamp.data.model.SimpleLotData
 
 @Dao
@@ -23,7 +24,7 @@ interface LotDao {
     suspend fun getAllLots(): List<SimpleLotData>
 
     @Query("SELECT * FROM lot_table WHERE id = :id")
-    suspend fun getLotById(id: String): LotEntity
+    suspend fun getLotById(id: Int): LotEntity
 
     @Insert
     suspend fun insertLot(lot: LotEntity)
@@ -36,5 +37,13 @@ interface LotDao {
 
     @Query("DELETE FROM lot_table")
     suspend fun deleteAllLots()
+
+    @Query("""
+        SELECT a.id, a.tag, a.gender, a.state, al.lot_id as lotId 
+        FROM animal_table AS a
+        INNER JOIN animal_lot_table AS al ON a.id = al.animal_id
+        WHERE al.lot_id = :lotId
+    """)
+    suspend fun getAnimalsByLotId(lotId: Int): List<SimpleAnimalData>
 
 }

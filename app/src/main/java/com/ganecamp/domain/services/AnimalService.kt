@@ -1,17 +1,17 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.database.dao.AnimalDao
+import com.ganecamp.data.database.dao.AnimalLotDao
 import com.ganecamp.data.database.entities.toEntity
 import com.ganecamp.domain.model.Animal
 import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.toDomain
 import java.time.Period
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-class AnimalService @Inject constructor(private val animalDao: AnimalDao) {
+class AnimalService @Inject constructor(private val animalDao: AnimalDao, private val animalLotDao: AnimalLotDao) {
 
     suspend fun getAllAnimals(): List<Animal> {
         return animalDao.getAllAnimals().map { simpleAnimalData ->
@@ -39,11 +39,13 @@ class AnimalService @Inject constructor(private val animalDao: AnimalDao) {
         return Triple(period.years, period.months, days - period.years * 365 - period.months * 30)
     }
 
-    fun dateFormatter(date: ZonedDateTime): String {
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-        return date.format(formatter)
-    }
+    suspend fun getAnimalById(animalId: Int): AnimalDetail =
+        animalDao.getAnimalById(animalId).toDomain()
 
-    suspend fun getAnimalById(animalId: Int): AnimalDetail = animalDao.getAnimalById(animalId).toDomain()
+    suspend fun addLotToAnimal(animalId: Int, lotId: Int) = animalLotDao.addLotToAnimal(animalId, lotId)
+
+    suspend fun changeLotToAnimal(animalId: Int, lotId: Int) = animalLotDao.changeLotToAnimal(animalId, lotId)
+
+    suspend fun removeFromLot(animalId: Int) = animalLotDao.removeFromLot(animalId)
 
 }

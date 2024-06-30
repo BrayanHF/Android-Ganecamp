@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.ganecamp.data.database.converters.DateConverter
 import com.ganecamp.data.database.dao.AnimalDao
+import com.ganecamp.data.database.dao.AnimalLotDao
 import com.ganecamp.data.database.dao.EventDao
 import com.ganecamp.data.database.dao.LotDao
 import com.ganecamp.data.database.dao.VaccineDao
@@ -43,5 +44,6 @@ abstract class GanecampDatabase : RoomDatabase() {
     abstract fun getVaccineDao(): VaccineDao
     abstract fun getEventDao(): EventDao
     abstract fun getWeightDao(): WeightDao
+    abstract fun getAnimalLotDao(): AnimalLotDao
 
 }

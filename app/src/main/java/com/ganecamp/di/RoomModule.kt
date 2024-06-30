@@ -41,4 +41,8 @@ object RoomModule {
     @Provides
     fun provideWeightDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getWeightDao()
 
+    @Singleton
+    @Provides
+    fun provideAnimalLotDao(ganecampDatabase: GanecampDatabase) = ganecampDatabase.getAnimalLotDao()
+
 }

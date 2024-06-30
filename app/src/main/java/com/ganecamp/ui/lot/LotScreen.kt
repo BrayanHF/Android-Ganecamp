@@ -21,13 +21,15 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.ganecamp.domain.model.Lot
-import com.ganecamp.ui.theme.*
 import com.ganecamp.R
+import com.ganecamp.domain.model.Lot
 import com.ganecamp.ui.general.GeneralBox
 import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.theme.DarkGreen
+import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.ui.theme.Typography
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -72,7 +74,9 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 
 @Composable
 fun LotItem(navController: NavController, lot: Lot) {
-    GeneralSurface(onClick = { }) {
+    GeneralSurface(onClick = {
+        navController.navigate("lotDetail/${lot.id}")
+    }) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()

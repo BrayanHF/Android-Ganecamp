@@ -3,20 +3,16 @@ package com.ganecamp.ui.animals
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +31,7 @@ import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Weight
 import com.ganecamp.ui.general.GeneralBox
+import com.ganecamp.ui.general.GeneralDescriptionCard
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.theme.LightGreenAlpha
 import com.ganecamp.ui.theme.Typography
@@ -50,7 +47,7 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
     val animalDetail: AnimalDetail by viewModel.animal.observeAsState(
         initial = AnimalDetail(
-            "", 0, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
+            "", animalId, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
         )
     )
     val vaccines: List<Description> by viewModel.vaccines.observeAsState(initial = emptyList())
@@ -67,7 +64,7 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                AnimalInfo(animalDetail, lotId, age)
+                AnimalInfo(navHostController, animalDetail, lotId, age)
                 if (vaccines.isNotEmpty()) {
                     AnimalVaccines(vaccines)
                 }
@@ -83,7 +80,12 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
 }
 
 @Composable
-fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int, age: Triple<Int, Int, Int>) {
+fun AnimalInfo(
+    navHostController: NavHostController,
+    animalDetail: AnimalDetail,
+    lotId: Int,
+    age: Triple<Int, Int, Int>
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -148,12 +150,17 @@ fun AnimalInfo(animalDetail: AnimalDetail, lotId: Int, age: Triple<Int, Int, Int
                 )
 
                 Surface(
-                    onClick = { /* TODO: Go to lot detail */ },
+                    onClick = { if (lotId != 0) navHostController.navigate("lotDetail/$lotId") },
                     shape = RoundedCornerShape(12.dp),
                     color = LightGreenAlpha
                 ) {
+                    val textLot = if (lotId == 0) {
+                        "ND"
+                    } else {
+                        lotId
+                    }
                     Text(
-                        text = stringResource(id = R.string.lot) + ": $lotId",
+                        text = stringResource(id = R.string.lot) + ": $textLot",
                         style = Typography.bodyMedium,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -267,7 +274,7 @@ fun AnimalVaccines(vaccines: List<Description>) {
     )
     LazyRow {
         items(vaccines.size) {
-            DescriptionCard(description = vaccines[it])
+            GeneralDescriptionCard(description = vaccines[it])
         }
 
     }
@@ -282,7 +289,7 @@ fun AnimalEvents(events: List<Description>) {
     )
     LazyRow {
         items(events.size) {
-            DescriptionCard(description = events[it])
+            GeneralDescriptionCard(description = events[it])
         }
     }
 }
@@ -298,29 +305,6 @@ fun AnimalWeights(weights: List<Weight>) {
         WeightRow(it)
         if (it != weights.last()) {
             HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-        }
-    }
-}
-
-@Composable
-fun DescriptionCard(description: Description) {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val formattedDate = description.date.format(formatter)
-
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp,
-        modifier = Modifier
-            .padding(8.dp)
-            .width(300.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = description.title, style = Typography.titleSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = formattedDate, style = Typography.titleSmall, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = description.description, style = Typography.titleSmall)
         }
     }
 }

@@ -3,21 +3,26 @@ package com.ganecamp.ui.general
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.domain.model.Description
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun GeneralBox(content: @Composable () -> Unit) {
@@ -34,8 +39,7 @@ fun GeneralBox(content: @Composable () -> Unit) {
 @Composable
 fun IsLoading() {
     Box(
-        Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator()
     }
@@ -60,5 +64,28 @@ fun GeneralSurface(onClick: () -> Unit, content: @Composable () -> Unit) {
         color = White
     ) {
         content()
+    }
+}
+
+@Composable
+fun GeneralDescriptionCard(description: Description) {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val formattedDate = description.date.format(formatter)
+
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
+        modifier = Modifier
+            .padding(8.dp)
+            .width(300.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = description.title, style = Typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = formattedDate, style = Typography.titleSmall, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = description.description, style = Typography.titleSmall)
+        }
     }
 }

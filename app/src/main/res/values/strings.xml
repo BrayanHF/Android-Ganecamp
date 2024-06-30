@@ -22,4 +22,8 @@
     <string name="lot">Lote</string>
     <string name="buy">Compra</string>
     <string name="sale">Venta</string>
+    <string name="purchase_value">Valor Compra</string>
+    <string name="sale_value">Valor Venta</string>
+    <string name="sale_date">Fecha Venta</string>
+    <string name="purchase_date">Fecha Compra</string>
 </resources>

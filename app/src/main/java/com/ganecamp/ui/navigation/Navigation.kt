@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ganecamp.ui.animals.AnimalDetailScreen
 import com.ganecamp.ui.animals.AnimalScreen
+import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotScreen
 import com.ganecamp.ui.scan.ScanScreen
 import com.ganecamp.ui.theme.Black
@@ -54,6 +55,13 @@ fun Navigation() {
                 val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
                 val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
                 AnimalDetailScreen(navController, animalId, lotId)
+            }
+            composable(
+                route = ScreenInternal.LotDetail.route,
+                arguments = listOf(navArgument("lotId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
+                LotDetailScreen(navController, lotId)
             }
         }
     }
