@@ -4,29 +4,27 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.ganecamp.domain.model.GeneralEvent
 import java.time.ZonedDateTime
 
 @Entity(
-    tableName = "animal_event_table",
-    foreignKeys = [
-        ForeignKey(
-            entity = AnimalEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["animal_id"],
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = EventEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["event_id"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
+    tableName = "animal_event_table", foreignKeys = [ForeignKey(
+        entity = AnimalEntity::class,
+        parentColumns = ["id"],
+        childColumns = ["animal_id"],
+        onDelete = ForeignKey.CASCADE
+    ), ForeignKey(
+        entity = EventEntity::class,
+        parentColumns = ["id"],
+        childColumns = ["event_id"],
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class AnimalEventEntity(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id") val id: Int,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Int,
     @ColumnInfo(name = "animal_id") val animalId: Int,
     @ColumnInfo(name = "event_id") val eventId: Int,
     @ColumnInfo(name = "event_date") val applicationDate: ZonedDateTime
 )
+
+fun GeneralEvent.toAnimalEntity() = AnimalEventEntity(id, entityId, eventId, applicationDate)

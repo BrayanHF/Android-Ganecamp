@@ -22,6 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ganecamp.ui.animals.AnimalDetailScreen
+import com.ganecamp.ui.animals.AnimalFormScreen
 import com.ganecamp.ui.animals.AnimalScreen
 import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotScreen
@@ -36,9 +37,7 @@ fun Navigation() {
     val navController = rememberNavController()
     val items = listOf(Screen.Animal, Screen.Lot, Screen.Scan)
 
-    Scaffold(
-        bottomBar = { BottomBar(navController, items) }
-    ) { innerPadding ->
+    Scaffold(bottomBar = { BottomBar(navController, items) }) { innerPadding ->
         NavHost(
             navController, startDestination = Screen.Animal.route, Modifier.padding(innerPadding)
         ) {
@@ -47,10 +46,8 @@ fun Navigation() {
             composable(Screen.Scan.route) { ScanScreen(navController) }
             composable(
                 route = ScreenInternal.AnimalDetail.route,
-                arguments = listOf(
-                    navArgument("animalId") { type = NavType.IntType },
-                    navArgument("lotId") { type = NavType.IntType }
-                )
+                arguments = listOf(navArgument("animalId") { type = NavType.IntType },
+                    navArgument("lotId") { type = NavType.IntType })
             ) { backStackEntry ->
                 val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
                 val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
@@ -63,6 +60,13 @@ fun Navigation() {
                 val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
                 LotDetailScreen(navController, lotId)
             }
+            composable(
+                route = ScreenInternal.AnimalForm.route,
+                arguments = listOf(navArgument("animalId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
+                AnimalFormScreen(navController, animalId)
+            }
         }
     }
 }
@@ -70,40 +74,33 @@ fun Navigation() {
 @Composable
 fun BottomBar(navController: NavHostController, items: List<Screen>) {
     NavigationBar(
-        containerColor = LightGreen,
-        contentColor = Black
+        containerColor = LightGreen, contentColor = Black
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination?.route
 
         items.forEach { screen ->
-            NavigationBarItem(
-                label = {
-                    Text(
-                        text = stringResource(id = screen.title),
-                        style = Typography.titleSmall
-                    )
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = screen.icon),
-                        contentDescription = stringResource(id = screen.title),
-                        modifier = Modifier.height(32.dp)
-                    )
-                },
-                selected = currentDestination == screen.route,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = DarkGreen
+            NavigationBarItem(label = {
+                Text(
+                    text = stringResource(id = screen.title), style = Typography.titleSmall
                 )
+            }, icon = {
+                Icon(
+                    painter = painterResource(id = screen.icon),
+                    contentDescription = stringResource(id = screen.title),
+                    modifier = Modifier.height(32.dp)
+                )
+            }, selected = currentDestination == screen.route, onClick = {
+                navController.navigate(screen.route) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }, colors = NavigationBarItemDefaults.colors(
+                indicatorColor = DarkGreen
+            )
             )
         }
     }

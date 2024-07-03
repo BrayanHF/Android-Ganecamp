@@ -26,4 +26,10 @@
     <string name="sale_value">Valor Venta</string>
     <string name="sale_date">Fecha Venta</string>
     <string name="purchase_date">Fecha Compra</string>
+    <string name="add">Agregar</string>
+    <string name="gender">Genero</string>
+    <string name="state">Estado</string>
+    <string name="weight">Peso</string>
+    <string name="save">Guardar</string>
+    <string name="confirm">Confirmar</string>
 </resources>

@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -31,15 +34,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.domain.model.Animal
-import com.ganecamp.ui.general.GeneralBox
 import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.DarkGreen
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightGreenAlpha
 import com.ganecamp.ui.theme.Orange
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -50,11 +54,37 @@ fun AnimalScreen(navController: NavHostController) {
     val animals by viewModel.animals.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
-    GeneralBox {
+    LaunchedEffect(Unit) {
+        viewModel.loadAnimals()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .background(White)
+    ) {
         if (isLoading) {
             IsLoading()
         } else {
             AnimalList(navController, animals)
+        }
+
+        FloatingActionButton(
+            onClick = { navController.navigate("formAnimal/0") },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd)
+                .size(64.dp),
+            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+            containerColor = Color.Transparent
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = stringResource(id = R.string.add),
+                tint = DarkGreen,
+                modifier = Modifier.background(Color.Transparent)
+            )
         }
     }
 }

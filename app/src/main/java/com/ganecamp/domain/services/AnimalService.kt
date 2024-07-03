@@ -11,7 +11,9 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-class AnimalService @Inject constructor(private val animalDao: AnimalDao, private val animalLotDao: AnimalLotDao) {
+class AnimalService @Inject constructor(
+    private val animalDao: AnimalDao, private val animalLotDao: AnimalLotDao
+) {
 
     suspend fun getAllAnimals(): List<Animal> {
         return animalDao.getAllAnimals().map { simpleAnimalData ->
@@ -20,6 +22,8 @@ class AnimalService @Inject constructor(private val animalDao: AnimalDao, privat
     }
 
     suspend fun getAnimalByTag(tag: String): AnimalDetail = animalDao.getAnimalByTag(tag).toDomain()
+
+    suspend fun getIdByTag(tag: String): Int = animalDao.getIdByTag(tag)
 
     suspend fun insertAnimal(animal: AnimalDetail) = animalDao.insertAnimal(animal.toEntity())
 
@@ -42,10 +46,14 @@ class AnimalService @Inject constructor(private val animalDao: AnimalDao, privat
     suspend fun getAnimalById(animalId: Int): AnimalDetail =
         animalDao.getAnimalById(animalId).toDomain()
 
-    suspend fun addLotToAnimal(animalId: Int, lotId: Int) = animalLotDao.addLotToAnimal(animalId, lotId)
+    suspend fun addLotToAnimal(animalId: Int, lotId: Int) =
+        animalLotDao.addLotToAnimal(animalId, lotId)
 
-    suspend fun changeLotToAnimal(animalId: Int, lotId: Int) = animalLotDao.changeLotToAnimal(animalId, lotId)
+    suspend fun changeLotToAnimal(animalId: Int, lotId: Int) =
+        animalLotDao.changeLotToAnimal(animalId, lotId)
 
     suspend fun removeFromLot(animalId: Int) = animalLotDao.removeFromLot(animalId)
+
+    suspend fun getLotById(animalId: Int) = animalDao.getLotById(animalId)
 
 }

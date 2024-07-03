@@ -16,6 +16,8 @@ class LotService @Inject constructor(private val lotDao: LotDao) {
         }
     }
 
+    suspend fun getAllLotsIDs(): List<Int> = lotDao.getAllLotsIDs()
+
     suspend fun getLotById(id: Int): LotDetail = lotDao.getLotById(id).toDomain()
 
     suspend fun insertLot(lot: LotDetail) = lotDao.insertLot(lot.toEntity())

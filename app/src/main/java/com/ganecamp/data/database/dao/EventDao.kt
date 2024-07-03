@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import com.ganecamp.data.database.entities.AnimalEventEntity
 import com.ganecamp.data.database.entities.EventEntity
+import com.ganecamp.data.database.entities.LotEventEntity
 import com.ganecamp.data.model.DescriptionData
 
 @Dao
@@ -28,7 +30,8 @@ interface EventDao {
     @Query("DELETE FROM event_table")
     suspend fun deleteAllEvents()
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             ae.id as id,
             e.title as title,
@@ -37,10 +40,12 @@ interface EventDao {
         FROM animal_event_table ae
         INNER JOIN event_table e ON ae.event_id = e.id
         WHERE ae.animal_id = :animalId
-    """)
+    """
+    )
     suspend fun animalEvents(animalId: Int): List<DescriptionData>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             al.id as id,
             e.title as title,
@@ -49,7 +54,14 @@ interface EventDao {
         FROM lot_event_table al
         INNER JOIN event_table e ON al.event_id = e.id
         WHERE al.lot_id = :lotId
-    """)
+    """
+    )
     suspend fun lotEvents(lotId: Int): List<DescriptionData>
+
+    @Insert
+    suspend fun addEventToAnimal(animalEventEntity: AnimalEventEntity)
+
+    @Insert
+    suspend fun addEventToLot(lotEventEntity: LotEventEntity)
 
 }
