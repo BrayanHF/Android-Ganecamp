@@ -32,4 +32,8 @@
     <string name="weight">Peso</string>
     <string name="save">Guardar</string>
     <string name="confirm">Confirmar</string>
+    <string name="back">Atras</string>
+    <string name="animal_detail">Detalles del Animal</string>
+    <string name="add_animal">Agregar Animal</string>
+    <string name="lot_detail">Detalles del Lote</string>
 </resources>

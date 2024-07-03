@@ -83,6 +83,11 @@ fun AnimalFormScreen(navController: NavController, animalId: Int = 0) {
 }
 
 @Composable
+fun AnimalFormTopBarContent() {
+    Text(text = stringResource(id = R.string.add_animal))
+}
+
+@Composable
 fun AnimalFormContent(
     state: AnimalFormState,
     lots: List<Int>,
@@ -298,18 +303,3 @@ fun LotDropdown(lots: List<Int>, selectedLot: Int?, onLotChange: (Int) -> Unit) 
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewAnimalFormContent() {
-//    AnimalFormContent(state = AnimalFormState(),
-//        lots = listOf(1, 2, 3, 4, 5),
-//        onGenderChange = {},
-//        onBirthDateChange = {},
-//        onPurchaseValueChange = {},
-//        onSaleValueChange = {},
-//        onStateChange = {},
-//        onWeightChange = {},
-//        onLotChange = {},
-//        onSaveClick = {})
-//}

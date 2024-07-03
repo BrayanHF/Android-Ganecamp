@@ -67,6 +67,11 @@ fun LotDetailScreen(navHostController: NavHostController, lotId: Int) {
 }
 
 @Composable
+fun LotDetailTopBarContent() {
+    Text(text = stringResource(id = R.string.lot_detail))
+}
+
+@Composable
 fun LotInfo(lotDetail: LotDetail) {
     Column(
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally

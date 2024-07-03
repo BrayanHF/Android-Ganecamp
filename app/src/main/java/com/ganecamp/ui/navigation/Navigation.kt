@@ -22,9 +22,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ganecamp.ui.animals.AnimalDetailScreen
+import com.ganecamp.ui.animals.AnimalDetailTopBarContent
 import com.ganecamp.ui.animals.AnimalFormScreen
+import com.ganecamp.ui.animals.AnimalFormTopBarContent
 import com.ganecamp.ui.animals.AnimalScreen
+import com.ganecamp.ui.general.DefaultTopBarContent
+import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.lot.LotDetailScreen
+import com.ganecamp.ui.lot.LotDetailTopBarContent
 import com.ganecamp.ui.lot.LotScreen
 import com.ganecamp.ui.scan.ScanScreen
 import com.ganecamp.ui.theme.Black
@@ -37,7 +42,24 @@ fun Navigation() {
     val navController = rememberNavController()
     val items = listOf(Screen.Animal, Screen.Lot, Screen.Scan)
 
-    Scaffold(bottomBar = { BottomBar(navController, items) }) { innerPadding ->
+    Scaffold(bottomBar = {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination?.route
+        if (currentDestination in bottomBarScreens) {
+            BottomBar(navController, items)
+        }
+    }, topBar = {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination?.route
+        if (currentDestination !in bottomBarScreens) {
+            when (currentDestination) {
+                ScreenInternal.AnimalDetail.route -> TopBar(navController) { AnimalDetailTopBarContent() }
+                ScreenInternal.LotDetail.route -> TopBar(navController) { LotDetailTopBarContent() }
+                ScreenInternal.AnimalForm.route -> TopBar(navController) { AnimalFormTopBarContent() }
+                else -> TopBar(navController) { DefaultTopBarContent() }
+            }
+        }
+    }) { innerPadding ->
         NavHost(
             navController, startDestination = Screen.Animal.route, Modifier.padding(innerPadding)
         ) {
@@ -73,9 +95,7 @@ fun Navigation() {
 
 @Composable
 fun BottomBar(navController: NavHostController, items: List<Screen>) {
-    NavigationBar(
-        containerColor = LightGreen, contentColor = Black
-    ) {
+    NavigationBar(containerColor = LightGreen, contentColor = Black) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination?.route
 

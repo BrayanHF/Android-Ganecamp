@@ -40,7 +40,6 @@ import com.ganecamp.utilities.enums.State
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-
 @Composable
 fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotId: Int) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
@@ -77,6 +76,11 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
             }
         }
     }
+}
+
+@Composable
+fun AnimalDetailTopBarContent() {
+    Text(text = stringResource(id = R.string.animal_detail))
 }
 
 @Composable
