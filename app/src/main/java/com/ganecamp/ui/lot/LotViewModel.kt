@@ -23,7 +23,7 @@ class LotViewModel @Inject constructor(private val lotService: LotService) : Vie
         loadLots()
     }
 
-    private fun loadLots() {
+    fun loadLots() {
         viewModelScope.launch {
             _lots.value = lotService.getAllLots()
             _isLoading.value = false

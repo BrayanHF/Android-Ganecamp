@@ -54,7 +54,7 @@ fun AnimalScreen(navController: NavHostController) {
     val animals by viewModel.animals.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = navController.currentBackStackEntry) {
         viewModel.loadAnimals()
     }
 

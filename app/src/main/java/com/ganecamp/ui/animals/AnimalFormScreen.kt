@@ -9,15 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,13 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
+import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.navigation.ScreenInternal
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun AnimalFormScreen(navController: NavController, animalId: Int = 0) {
@@ -110,7 +104,11 @@ fun AnimalFormContent(
 
         StateDropdown(selectedState = state.state, onStateChange = onStateChange)
 
-        DatePickerField(selectedDate = state.birthDate, onDateChange = onBirthDateChange)
+        DatePickerField(
+            selectedDate = state.birthDate,
+            onDateChange = onBirthDateChange,
+            label = R.string.birth_date
+        )
 
         LotDropdown(lots = lots, selectedLot = state.lotId, onLotChange = onLotChange)
 
@@ -144,43 +142,6 @@ fun AnimalFormContent(
             onClick = onSaveClick, modifier = Modifier.align(Alignment.End)
         ) {
             Text(stringResource(id = R.string.save))
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DatePickerField(selectedDate: ZonedDateTime, onDateChange: (ZonedDateTime) -> Unit) {
-    val datePickerState = rememberDatePickerState()
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val focusManager = LocalFocusManager.current
-
-    var showDate by remember { mutableStateOf(false) }
-
-
-    OutlinedTextField(value = selectedDate.format(formatter),
-        onValueChange = {},
-        label = { Text(stringResource(id = R.string.birth_date)) },
-        readOnly = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .onFocusEvent { if (it.isFocused) showDate = true })
-
-    if (showDate) {
-        DatePickerDialog(onDismissRequest = { showDate = false }, confirmButton = {
-            Button(onClick = {
-                showDate = false
-                val date = datePickerState.selectedDateMillis
-                val dateZDT = date?.let { Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC")) }
-                if (dateZDT != null) {
-                    onDateChange(dateZDT)
-                }
-                focusManager.clearFocus()
-            }) {
-                Text(stringResource(id = R.string.confirm))
-            }
-        }) {
-            DatePicker(state = datePickerState)
         }
     }
 }

@@ -7,14 +7,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -23,13 +31,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.domain.model.Lot
-import com.ganecamp.ui.general.GeneralBox
 import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.theme.DarkGreen
 import com.ganecamp.ui.theme.LightGreenAlpha
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -37,11 +45,37 @@ fun LotScreen(navController: NavController) {
     val lots by viewModel.lots.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
-    GeneralBox {
+    LaunchedEffect(key1 = navController.currentBackStackEntry) {
+        viewModel.loadLots()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .background(White)
+    ) {
         if (isLoading) {
             IsLoading()
         } else {
             LotList(navController, lots)
+        }
+
+        FloatingActionButton(
+            onClick = { navController.navigate("formLot/0") },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd)
+                .size(64.dp),
+            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+            containerColor = Color.Transparent
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = stringResource(id = R.string.add),
+                tint = DarkGreen,
+                modifier = Modifier.background(Color.Transparent)
+            )
         }
     }
 }

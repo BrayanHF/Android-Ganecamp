@@ -30,6 +30,8 @@ import com.ganecamp.ui.general.DefaultTopBarContent
 import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotDetailTopBarContent
+import com.ganecamp.ui.lot.LotFormScreen
+import com.ganecamp.ui.lot.LotFormTopBarContent
 import com.ganecamp.ui.lot.LotScreen
 import com.ganecamp.ui.scan.ScanScreen
 import com.ganecamp.ui.theme.Black
@@ -56,6 +58,7 @@ fun Navigation() {
                 ScreenInternal.AnimalDetail.route -> TopBar(navController) { AnimalDetailTopBarContent() }
                 ScreenInternal.LotDetail.route -> TopBar(navController) { LotDetailTopBarContent() }
                 ScreenInternal.AnimalForm.route -> TopBar(navController) { AnimalFormTopBarContent() }
+                ScreenInternal.LotForm.route -> TopBar(navController) { LotFormTopBarContent() }
                 else -> TopBar(navController) { DefaultTopBarContent() }
             }
         }
@@ -88,6 +91,13 @@ fun Navigation() {
             ) { backStackEntry ->
                 val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
                 AnimalFormScreen(navController, animalId)
+            }
+            composable(
+                route = ScreenInternal.LotForm.route,
+                arguments = listOf(navArgument("lotId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val lotId = backStackEntry.arguments?.getInt("lotId") ?: 0
+                LotFormScreen(navController, lotId)
             }
         }
     }

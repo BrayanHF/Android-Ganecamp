@@ -134,12 +134,10 @@ class AnimalFormViewModel @Inject constructor(
                 eventService.addEventToAnimal(GeneralEvent(0, newId, 1, ZonedDateTime.now()))
 
                 _uiState.value = _uiState.value.copy(id = newId)
-
-                _animalSaved.value = true
             } else {
                 animalService.updateAnimal(animal)
-                _animalSaved.value = true
             }
+            _animalSaved.value = true
         }
     }
 
