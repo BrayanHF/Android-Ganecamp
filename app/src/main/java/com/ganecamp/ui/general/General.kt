@@ -1,6 +1,5 @@
 package com.ganecamp.ui.general
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,18 +51,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-
-@Composable
-fun GeneralBox(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .background(White)
-    ) {
-        content()
-    }
-}
 
 @Composable
 fun IsLoading() {

@@ -64,4 +64,10 @@ class LotDetailViewModel @Inject constructor(
         }
     }
 
+    fun deleteLot(lotId: Int) {
+        viewModelScope.launch {
+            lotService.deleteLot(lotId)
+        }
+    }
+
 }

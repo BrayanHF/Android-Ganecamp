@@ -56,4 +56,6 @@ class AnimalService @Inject constructor(
 
     suspend fun getLotById(animalId: Int) = animalDao.getLotById(animalId)
 
+    suspend fun deleteAnimalById(animalId: Int) = animalDao.deleteAnimalById(animalId)
+
 }

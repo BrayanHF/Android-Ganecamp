@@ -36,7 +36,7 @@ interface LotDao {
     suspend fun updateLot(lot: LotEntity)
 
     @Query("DELETE FROM lot_table WHERE id = :id")
-    suspend fun deleteLot(id: String)
+    suspend fun deleteLot(id: Int)
 
     @Query("DELETE FROM lot_table")
     suspend fun deleteAllLots()

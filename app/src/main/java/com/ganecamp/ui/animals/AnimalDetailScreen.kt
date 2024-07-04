@@ -1,6 +1,9 @@
 package com.ganecamp.ui.animals
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -30,18 +35,21 @@ import com.ganecamp.R
 import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Weight
-import com.ganecamp.ui.general.GeneralBox
 import com.ganecamp.ui.general.GeneralDescriptionCard
 import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.navigation.ScreenInternal
+import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotId: Int) {
+fun AnimalDetailScreen(navController: NavHostController, animalId: Int, lotId: Int) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
     val animalDetail: AnimalDetail by viewModel.animal.observeAsState(
@@ -54,7 +62,18 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
     val weights: List<Weight> by viewModel.weights.observeAsState(initial = emptyList())
     val age by viewModel.ageAnimal.observeAsState(initial = Triple(0, 0, 0))
 
-    GeneralBox {
+    BackHandler {
+        navController.navigate("animal") {
+            popUpTo(ScreenInternal.AnimalForm.route) { inclusive = true }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .background(White)
+    ) {
         if (isLoading) {
             IsLoading()
         } else {
@@ -63,7 +82,7 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                AnimalInfo(navHostController, animalDetail, lotId, age)
+                AnimalInfo(navController, animalDetail, lotId, age)
                 if (vaccines.isNotEmpty()) {
                     AnimalVaccines(vaccines)
                 }
@@ -72,6 +91,50 @@ fun AnimalDetailScreen(navHostController: NavHostController, animalId: Int, lotI
                 }
                 if (weights.isNotEmpty()) {
                     AnimalWeights(weights)
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.BottomEnd),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.deleteAnimal(animalId)
+                        navController.navigate("animal") {
+                            popUpTo(ScreenInternal.AnimalDetail.route) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                        .size(48.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp),
+                    containerColor = Color.Transparent
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_delete),
+                        contentDescription = stringResource(id = R.string.delete),
+                        tint = Red,
+                        modifier = Modifier.background(Color.Transparent)
+                    )
+                }
+
+                FloatingActionButton(
+                    onClick = { navController.navigate("formAnimal/${animalId}") },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .size(56.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp),
+                    containerColor = Color.Transparent
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_edit2),
+                        contentDescription = stringResource(id = R.string.edit),
+                        tint = LightBlue,
+                        modifier = Modifier.background(Color.Transparent)
+                    )
                 }
             }
         }

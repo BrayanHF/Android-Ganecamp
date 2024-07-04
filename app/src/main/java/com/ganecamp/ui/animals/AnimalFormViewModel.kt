@@ -121,21 +121,21 @@ class AnimalFormViewModel @Inject constructor(
                 state = currentState.state
             )
 
-
             if (animal.id == 0) {
                 animalService.insertAnimal(animal)
-
                 val newId = animalService.getIdByTag(animal.tag)
-
                 if (currentState.lotId != 0) animalService.addLotToAnimal(newId, currentState.lotId)
-
                 weightService.insertWeight(Weight(0, newId, weight, ZonedDateTime.now()))
-
                 eventService.addEventToAnimal(GeneralEvent(0, newId, 1, ZonedDateTime.now()))
-
                 _uiState.value = _uiState.value.copy(id = newId)
             } else {
+                val lotId = animalService.getLotById(currentState.id)
                 animalService.updateAnimal(animal)
+                if (lotId == 0) {
+                    animalService.removeFromLot(currentState.id)
+                } else if(lotId != currentState.lotId && currentState.lotId != 0){
+                    animalService.changeLotToAnimal(currentState.id, currentState.lotId)
+                }
             }
             _animalSaved.value = true
         }

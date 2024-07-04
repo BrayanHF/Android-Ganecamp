@@ -24,7 +24,7 @@ class LotService @Inject constructor(private val lotDao: LotDao) {
 
     suspend fun updateLot(lot: LotDetail) = lotDao.updateLot(lot.toEntity())
 
-    suspend fun deleteLot(id: String) = lotDao.deleteLot(id)
+    suspend fun deleteLot(id: Int) = lotDao.deleteLot(id)
 
     suspend fun deleteAllLots() = lotDao.deleteAllLots()
 

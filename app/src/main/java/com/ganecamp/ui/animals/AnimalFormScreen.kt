@@ -46,7 +46,6 @@ fun AnimalFormScreen(navController: NavController, animalId: Int = 0) {
     val lots by viewModel.lots.observeAsState(initial = emptyList())
     val animalSaved by viewModel.animalSaved.collectAsState()
 
-
     LaunchedEffect(animalId) {
         viewModel.loadLots()
         if (animalId != 0) {
@@ -58,6 +57,7 @@ fun AnimalFormScreen(navController: NavController, animalId: Int = 0) {
         if (animalSaved) {
             navController.navigate("animalDetail/${state.id}/${state.lotId}") {
                 popUpTo(ScreenInternal.AnimalForm.route) { inclusive = true }
+                popUpTo(ScreenInternal.AnimalDetail.route) { inclusive = true }
             }
         }
     }
@@ -112,13 +112,15 @@ fun AnimalFormContent(
 
         LotDropdown(lots = lots, selectedLot = state.lotId, onLotChange = onLotChange)
 
-        OutlinedTextField(
-            value = state.weight,
-            onValueChange = onWeightChange,
-            label = { Text(text = stringResource(id = R.string.weight)) },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (state.id == 0) {
+            OutlinedTextField(
+                value = state.weight,
+                onValueChange = onWeightChange,
+                label = { Text(text = stringResource(id = R.string.weight)) },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         OutlinedTextField(
             value = state.purchaseValue,

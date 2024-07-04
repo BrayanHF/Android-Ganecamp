@@ -87,4 +87,10 @@ class AnimalDetailViewModel @Inject constructor(
         _ageAnimal.value = animalService.calculateAge(birthDate)
     }
 
+    fun deleteAnimal(animalId: Int) {
+        viewModelScope.launch {
+            animalService.deleteAnimalById(animalId)
+        }
+    }
+
 }
