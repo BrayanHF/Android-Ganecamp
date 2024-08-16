@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.ganecamp.domain.model.Lot
 import com.ganecamp.domain.services.LotService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,12 +25,8 @@ class LotViewModel @Inject constructor(private val lotService: LotService) : Vie
 
     fun loadLots() {
         viewModelScope.launch {
-            lotService.deleteAllLots()
-
-
-//            _lots.value = lotService.getAllLots()
-//            delay(4000)
-//            _isLoading.value = false
+            _lots.value = lotService.getAllLots()
+            _isLoading.value = false
         }
     }
 

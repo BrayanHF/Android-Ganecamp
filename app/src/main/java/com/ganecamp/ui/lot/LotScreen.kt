@@ -7,26 +7,36 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.ganecamp.domain.model.Lot
-import com.ganecamp.ui.animals.IsLoading
-import com.ganecamp.ui.theme.*
 import com.ganecamp.R
+import com.ganecamp.domain.model.Lot
+import com.ganecamp.ui.general.GeneralSurface
+import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.theme.DarkGreen
+import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -34,8 +44,12 @@ fun LotScreen(navController: NavController) {
     val lots by viewModel.lots.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
 
+    LaunchedEffect(key1 = navController.currentBackStackEntry) {
+        viewModel.loadLots()
+    }
+
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
             .background(White)
@@ -45,32 +59,45 @@ fun LotScreen(navController: NavController) {
         } else {
             LotList(navController, lots)
         }
+
+        FloatingActionButton(
+            onClick = { navController.navigate("formLot/0") },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd)
+                .size(64.dp),
+            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+            containerColor = Color.Transparent
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = stringResource(id = R.string.add),
+                tint = DarkGreen,
+                modifier = Modifier.background(Color.Transparent)
+            )
+        }
     }
 }
 
 @Composable
 fun LotList(navController: NavController, lots: List<Lot>) {
     if (lots.isEmpty()) {
-        Column {
-            Text(
-                text = stringResource(id = R.string.no_lots),
-                style = Typography.bodyLarge
-            )
-        }
+        NoRegistered(textId = R.string.no_lots)
         return
     }
 
-    val configuration = LocalConfiguration.current
-    val columns = when (configuration.orientation) {
-        Configuration.ORIENTATION_LANDSCAPE -> 4
-        else -> 2
-    }
+    val columns: Int =
+        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            4
+        } else {
+            2
+        }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(8.dp)
     ) {
         items(lots.size) {
             LotItem(navController, lots[it])
@@ -80,20 +107,12 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 
 @Composable
 fun LotItem(navController: NavController, lot: Lot) {
-    Surface(
-        onClick = {},
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .padding(0.dp, 4.dp)
-            .fillMaxSize(),
-        shadowElevation = 4.dp,
-        color = White
-    ) {
+    GeneralSurface(onClick = {
+        navController.navigate("lotDetail/${lot.id}")
+    }) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LightGreenAlpha)
-
         ) {
             val (id, animalCount, bottomLine) = createRefs()
 
@@ -104,8 +123,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                     height = Dimension.value(44.dp)
-                },
-                verticalArrangement = Arrangement.Center
+                }, verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "ID: ${lot.id}",
@@ -121,8 +139,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                     height = Dimension.value(44.dp)
-                },
-                verticalArrangement = Arrangement.Center
+                }, verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = stringResource(id = R.string.animals) + ": ${lot.animalCount}",
@@ -139,8 +156,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     width = Dimension.fillToConstraints
                     height = Dimension.value(4.dp)
                 }
-                .background(DarkGreen)
-            )
+                .background(DarkGreen))
         }
     }
 }

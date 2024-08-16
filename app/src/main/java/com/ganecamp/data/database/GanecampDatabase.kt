@@ -1,13 +1,17 @@
 package com.ganecamp.data.database
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.ganecamp.data.database.converters.DateConverter
 import com.ganecamp.data.database.dao.AnimalDao
+import com.ganecamp.data.database.dao.AnimalLotDao
 import com.ganecamp.data.database.dao.EventDao
 import com.ganecamp.data.database.dao.LotDao
 import com.ganecamp.data.database.dao.VaccineDao
+import com.ganecamp.data.database.dao.WeightDao
 import com.ganecamp.data.database.entities.AnimalEntity
 import com.ganecamp.data.database.entities.AnimalEventEntity
 import com.ganecamp.data.database.entities.AnimalLotEntity
@@ -30,7 +34,7 @@ import com.ganecamp.data.database.entities.WeightEntity
         VaccineEntity::class,
         WeightEntity::class
     ],
-    version = 2
+    version = 3
 )
 @TypeConverters(DateConverter::class)
 abstract class GanecampDatabase : RoomDatabase() {
@@ -39,5 +43,7 @@ abstract class GanecampDatabase : RoomDatabase() {
     abstract fun getLotDao(): LotDao
     abstract fun getVaccineDao(): VaccineDao
     abstract fun getEventDao(): EventDao
+    abstract fun getWeightDao(): WeightDao
+    abstract fun getAnimalLotDao(): AnimalLotDao
 
 }

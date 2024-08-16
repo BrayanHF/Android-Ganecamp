@@ -27,6 +27,12 @@ interface AnimalDao {
     @Query("SELECT * FROM animal_table WHERE tag = :tag")
     suspend fun getAnimalByTag(tag: String): AnimalEntity
 
+    @Query("SELECT IFNULL(id, 0) FROM animal_table WHERE tag = :tag")
+    suspend fun getIdByTag(tag: String): Int
+
+    @Query("SELECT * FROM animal_table WHERE id = :id")
+    suspend fun getAnimalById(id: Int): AnimalEntity
+
     @Insert
     suspend fun insertAnimal(animal: AnimalEntity)
 
@@ -36,7 +42,13 @@ interface AnimalDao {
     @Query("DELETE FROM animal_table WHERE tag = :tag")
     suspend fun deleteAnimalByTag(tag: String)
 
+    @Query("DELETE FROM animal_table WHERE id = :id")
+    suspend fun deleteAnimalById(id: Int)
+
     @Query("DELETE FROM animal_table")
     suspend fun deleteAllAnimals()
+
+    @Query("SELECT IFNULL(lot_id, 0) FROM animal_lot_table WHERE animal_id = :animalId")
+    suspend fun getLotById(animalId: Int): Int
 
 }
