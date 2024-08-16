@@ -15,20 +15,11 @@ val Roboto = FontFamily(
     Font(R.font.roboto_italic, FontWeight.Normal, FontStyle.Italic)
 )
 
-
-// Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
         fontSize = 28.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = Roboto,
-        fontWeight = FontWeight.Bold,
-        fontSize = 18.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
         color = Black
@@ -36,15 +27,41 @@ val Typography = Typography(
     bodyMedium = TextStyle(
         fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
+        fontSize = 22.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.5.sp,
+        color = Black
     ),
     bodySmall = TextStyle(
         fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.5.sp,
+        color = Black
+    ),
+    titleLarge = TextStyle(
+        fontFamily = Roboto,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp,
+        color = Black
+    ),
+    titleMedium = TextStyle(
+        fontFamily = Roboto,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp,
+        color = Black
+    ),
+    titleSmall = TextStyle(
+        fontFamily = Roboto,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp,
+        color = Black
     )
 )

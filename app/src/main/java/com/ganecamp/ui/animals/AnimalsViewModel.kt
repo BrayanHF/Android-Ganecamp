@@ -24,10 +24,10 @@ class AnimalsViewModel @Inject constructor(private val animalService: AnimalServ
     }
 
     fun loadAnimals() {
+        _isLoading.value = true
         viewModelScope.launch {
             _animals.value = animalService.getAllAnimals()
             _isLoading.value = false
         }
     }
-
 }

@@ -16,7 +16,7 @@
     <string name="years">Años</string>
     <string name="months">Meses</string>
     <string name="days">Días</string>
-    <string name="birth_date">"Nacimiento: "</string>
+    <string name="birth_date">"Nacimiento"</string>
     <string name="age">Edad</string>
     <string name="edit">Editar</string>
     <string name="lot">Lote</string>
@@ -37,4 +37,12 @@
     <string name="add_animal">Agregar Animal</string>
     <string name="lot_detail">Detalles del Lote</string>
     <string name="delete">Eliminar</string>
+    <string name="vaccines">Vacunas</string>
+    <string name="events">Eventos</string>
+    <string name="weights">Pesos</string>
+    <string name="add_vaccine">Agregar Vacuna</string>
+    <string name="add_event">Agregar Evento</string>
+    <string name="add_weight">Agregar Peso</string>
+    <string name="edit_animal">Editar Animal</string>
+    <string name="delete_animal">Aliminar Animal</string>
 </resources>

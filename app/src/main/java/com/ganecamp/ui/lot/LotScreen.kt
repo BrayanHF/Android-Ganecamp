@@ -35,7 +35,6 @@ import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.theme.DarkGreen
-import com.ganecamp.ui.theme.LightGreenAlpha
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
 
@@ -114,7 +113,6 @@ fun LotItem(navController: NavController, lot: Lot) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LightGreenAlpha)
         ) {
             val (id, animalCount, bottomLine) = createRefs()
 

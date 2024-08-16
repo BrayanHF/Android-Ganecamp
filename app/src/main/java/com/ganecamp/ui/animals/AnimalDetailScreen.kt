@@ -1,24 +1,31 @@
 package com.ganecamp.ui.animals
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -35,13 +43,14 @@ import com.ganecamp.R
 import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Weight
-import com.ganecamp.ui.general.GeneralDescriptionCard
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.navigation.ScreenInternal
+import com.ganecamp.ui.theme.Blue
+import com.ganecamp.ui.theme.DarkGray
+import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
-import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.ui.theme.Pink
 import com.ganecamp.ui.theme.Red
-import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -68,73 +77,381 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int, lotId: I
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .background(White)
-    ) {
-        if (isLoading) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(White)
+        ) {
             IsLoading()
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            AnimalInfo(navController, animalDetail, lotId, age)
+            SectionWithLazyRow(titleRes = R.string.vaccines,
+                items = vaccines,
+                cardContent = { VaccineCard(it) },
+                addActionTextRes = R.string.add_vaccine,
+                onClickAdd = { })
+            SectionWithLazyRow(titleRes = R.string.events,
+                items = events,
+                cardContent = { EventCard(it) },
+                addActionTextRes = R.string.add_event,
+                onClickAdd = { })
+            AnimalWeights(weights = weights, onClickAdd = { })
+            OutlinedButton(
+                onClick = {
+                    viewModel.deleteAnimal(animalId)
+                    navController.navigate("animal") {
+                        popUpTo(ScreenInternal.AnimalDetail.route) { inclusive = true }
+                    }
+                },
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(1.dp, Red),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent
+                ),
+                modifier = Modifier.padding(8.dp)
             ) {
-                AnimalInfo(navController, animalDetail, lotId, age)
-                if (vaccines.isNotEmpty()) {
-                    AnimalVaccines(vaccines)
+                Text(
+                    text = stringResource(id = R.string.delete_animal), color = Red
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimalInfo(
+    navController: NavHostController,
+    animalDetail: AnimalDetail,
+    lotId: Int,
+    age: Triple<Int, Int, Int>
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val genderIcon: Int
+                val genderColor: Color
+                if (animalDetail.gender == Gender.Male) {
+                    genderIcon = R.drawable.ic_bull
+                    genderColor = Blue
+                } else {
+                    genderIcon = R.drawable.ic_cow
+                    genderColor = Pink
                 }
-                if (events.isNotEmpty()) {
-                    AnimalEvents(events)
+                Icon(
+                    painter = painterResource(id = genderIcon),
+                    contentDescription = stringResource(R.string.animal_icon),
+                    modifier = Modifier.size(56.dp),
+                    tint = genderColor
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "ID: ${animalDetail.id}", style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "TAG: ${animalDetail.tag}",
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
-                if (weights.isNotEmpty()) {
-                    AnimalWeights(weights)
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedButton(
+                    onClick = { navController.navigate("formAnimal/${animalDetail.id}") },
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, LightBlue),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.edit_animal), color = LightBlue
+                    )
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.BottomEnd),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.deleteAnimal(animalId)
-                        navController.navigate("animal") {
-                            popUpTo(ScreenInternal.AnimalDetail.route) { inclusive = true }
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                        .size(48.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                    containerColor = Color.Transparent
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_delete),
-                        contentDescription = stringResource(id = R.string.delete),
-                        tint = Red,
-                        modifier = Modifier.background(Color.Transparent)
-                    )
-                }
+            InfoRowWithClickableLot(navController, lotId, animalDetail)
 
-                FloatingActionButton(
-                    onClick = { navController.navigate("formAnimal/${animalId}") },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .size(56.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                    containerColor = Color.Transparent
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_edit2),
-                        contentDescription = stringResource(id = R.string.edit),
-                        tint = LightBlue,
-                        modifier = Modifier.background(Color.Transparent)
-                    )
+            InfoRow(
+                titleRes = R.string.birth_date,
+                value = animalDetail.birthDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                titleRes2 = R.string.age,
+                value2 = when {
+                    age.first > 0 -> "${age.first} años"
+                    age.second > 0 -> "${age.second} meses"
+                    else -> "${age.third} días"
+                }
+            )
+
+            InfoRow(
+                titleRes = R.string.purchase_value,
+                value = "$${animalDetail.purchaseValue}",
+                titleRes2 = R.string.sale_value,
+                value2 = "$${animalDetail.saleValue}"
+            )
+        }
+    }
+}
+
+@Composable
+fun InfoRowWithClickableLot(
+    navController: NavHostController, lotId: Int, animalDetail: AnimalDetail
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(modifier = Modifier
+            .weight(1f)
+            .background(
+                color = if (lotId != 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(enabled = lotId != 0) {
+                if (lotId != 0) navController.navigate("lotDetail/$lotId")
+            }
+            .padding(top = 16.dp, bottom = 16.dp, start = 16.dp, end = 32.dp)) {
+            Text(
+                text = stringResource(id = R.string.lot),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Text(
+                text = if (lotId == 0) "ND" else lotId.toString(),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.state),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Text(
+                text = stringResource(
+                    id = when (animalDetail.state) {
+                        State.Healthy -> R.string.healthy
+                        State.Sick -> R.string.sick
+                        State.Injured -> R.string.injured
+                        State.Dead -> R.string.dead
+                        State.Sold -> R.string.sold
+                    }
+                ), style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+fun InfoRow(
+    titleRes: Int, value: String, titleRes2: Int, value2: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(id = titleRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Text(
+                text = value, style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(id = titleRes2),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Text(
+                text = value2, style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+fun AddButton(text: Int, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = { onClick() },
+        shape = RoundedCornerShape(50),
+        border = BorderStroke(1.dp, Green),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Text(
+            text = stringResource(id = text), color = Green
+        )
+    }
+}
+
+@Composable
+fun SectionWithLazyRow(
+    onClickAdd: () -> Unit,
+    titleRes: Int,
+    items: List<Description>,
+    cardContent: @Composable (Description) -> Unit,
+    addActionTextRes: Int
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(id = titleRes),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            AddButton(text = addActionTextRes, onClick = onClickAdd)
+        }
+        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp)) {
+            items(items.size) { index ->
+                cardContent(items[index])
+            }
+        }
+    }
+}
+
+@Composable
+fun VaccineCard(vaccine: Description) {
+    Card(
+        modifier = Modifier
+            .width(256.dp)
+            .padding(end = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = vaccine.title, style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = vaccine.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = vaccine.description, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+fun EventCard(event: Description) {
+    Card(
+        modifier = Modifier
+            .width(256.dp)
+            .padding(end = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = event.title, style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = event.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                style = MaterialTheme.typography.bodySmall,
+                color = DarkGray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = event.description, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(id = R.string.weights),
+                style = MaterialTheme.typography.titleSmall
+            )
+            AddButton(text = R.string.add_weight, onClick = onClickAdd)
+        }
+        if (weights.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+            ) {
+                weights.forEach { weight ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = weight.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "${weight.weight} kg",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
@@ -143,262 +460,8 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int, lotId: I
 
 @Composable
 fun AnimalDetailTopBarContent() {
-    Text(text = stringResource(id = R.string.animal_detail))
-}
-
-@Composable
-fun AnimalInfo(
-    navHostController: NavHostController,
-    animalDetail: AnimalDetail,
-    lotId: Int,
-    age: Triple<Int, Int, Int>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            val icGender: Int = if (animalDetail.gender == Gender.Male) {
-                R.drawable.ic_bull
-            } else {
-                R.drawable.ic_cow
-            }
-            Icon(
-                painter = painterResource(id = icGender),
-                contentDescription = stringResource(R.string.animal_icon),
-                modifier = Modifier.size(128.dp)
-            )
-        }
-        Column {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text(
-                    text = "TAG: ${animalDetail.tag}",
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text(
-                    text = "ID: ${animalDetail.id}",
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.padding(8.dp)
-                )
-                val textGender: Int = if (animalDetail.gender == Gender.Male) {
-                    R.string.male
-                } else {
-                    R.string.female
-                }
-                Text(
-                    text = stringResource(id = textGender),
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val textState = when (animalDetail.state) {
-                    State.Healthy -> R.string.healthy
-                    State.Sick -> R.string.sick
-                    State.Injured -> R.string.injured
-                    State.Dead -> R.string.dead
-                    State.Sold -> R.string.sold
-                }
-                Text(
-                    text = stringResource(id = textState),
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                Surface(
-                    onClick = { if (lotId != 0) navHostController.navigate("lotDetail/$lotId") },
-                    shape = RoundedCornerShape(12.dp),
-                    color = LightGreenAlpha
-                ) {
-                    val textLot = if (lotId == 0) {
-                        "ND"
-                    } else {
-                        lotId
-                    }
-                    Text(
-                        text = stringResource(id = R.string.lot) + ": $textLot",
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-        }
-    }
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            Text(
-                text = stringResource(id = R.string.birth_date) + animalDetail.birthDate.format(
-                    formatter
-                ), style = Typography.bodyMedium, modifier = Modifier.padding(8.dp)
-            )
-
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Surface {
-                Text(
-                    text = stringResource(id = R.string.age) + ":",
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-            if (age.first != 0) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(id = R.string.years),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
-                    )
-                    Text(
-                        text = age.first.toString(),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
-                    )
-                }
-            }
-
-            if (age.second != 0) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(id = R.string.months),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
-                    )
-                    Text(
-                        text = age.second.toString(),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
-                    )
-                }
-            }
-
-            if (age.third != 0) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(id = R.string.days),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
-                    )
-                    Text(
-                        text = age.third.toString(),
-                        style = Typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
-                    )
-                }
-            }
-        }
-    }
-
-
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(id = R.string.buy) + ":",
-                style = Typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
-            )
-            Text(
-                text = animalDetail.purchaseValue.toString(),
-                style = Typography.bodyMedium,
-            )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(id = R.string.sale) + ":",
-                style = Typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
-            )
-            Text(
-                text = animalDetail.saleValue.toString(),
-                style = Typography.bodyMedium,
-            )
-        }
-    }
-}
-
-@Composable
-fun AnimalVaccines(vaccines: List<Description>) {
     Text(
-        text = "Vaccines",
-        style = Typography.bodyMedium,
-        modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
+        text = stringResource(id = R.string.animal_detail),
+        style = MaterialTheme.typography.titleMedium
     )
-    LazyRow {
-        items(vaccines.size) {
-            GeneralDescriptionCard(description = vaccines[it])
-        }
-
-    }
-}
-
-@Composable
-fun AnimalEvents(events: List<Description>) {
-    Text(
-        text = "Events",
-        style = Typography.bodyMedium,
-        modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
-    )
-    LazyRow {
-        items(events.size) {
-            GeneralDescriptionCard(description = events[it])
-        }
-    }
-}
-
-@Composable
-fun AnimalWeights(weights: List<Weight>) {
-    Text(
-        text = "Pesos",
-        style = Typography.bodyMedium,
-        modifier = Modifier.padding(8.dp, 16.dp, 8.dp, 8.dp)
-    )
-    weights.forEach {
-        WeightRow(it)
-        if (it != weights.last()) {
-            HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-        }
-    }
-}
-
-@Composable
-fun WeightRow(weight: Weight) {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Text(
-            text = "${weight.weight} kg",
-            modifier = Modifier.weight(1f),
-            style = Typography.bodyMedium
-        )
-        Text(
-            text = weight.date.format(formatter),
-            modifier = Modifier.weight(1f),
-            style = Typography.bodyMedium
-        )
-        Icon(
-            painter = painterResource(id = R.drawable.ic_edit),
-            contentDescription = stringResource(R.string.edit),
-            modifier = Modifier.size(24.dp)
-        )
-    }
 }

@@ -80,7 +80,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
 
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(8.dp)
                     .align(Alignment.BottomEnd),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -2,18 +2,26 @@ package com.ganecamp.ui.animals
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,24 +34,19 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.domain.model.Animal
-import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
-import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.Blue
 import com.ganecamp.ui.theme.DarkGreen
-import com.ganecamp.ui.theme.Green
-import com.ganecamp.ui.theme.LightGreenAlpha
+import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Orange
-import com.ganecamp.ui.theme.Typography
-import com.ganecamp.ui.theme.White
+import com.ganecamp.ui.theme.Pink
+import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -51,213 +54,119 @@ import com.ganecamp.utilities.enums.State
 @Composable
 fun AnimalScreen(navController: NavHostController) {
     val viewModel: AnimalsViewModel = hiltViewModel()
-    val animals by viewModel.animals.observeAsState(initial = emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(initial = true)
+    val animals by viewModel.animals.observeAsState(emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(true)
 
-    LaunchedEffect(key1 = navController.currentBackStackEntry) {
+    LaunchedEffect(navController.currentBackStackEntry) {
         viewModel.loadAnimals()
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
-            .background(White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        if (isLoading) {
-            IsLoading()
-        } else {
-            AnimalList(navController, animals)
-        }
-
-        FloatingActionButton(
-            onClick = { navController.navigate("formAnimal/0") },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.BottomEnd)
-                .size(64.dp),
-            elevation = FloatingActionButtonDefaults.elevation(0.dp),
-            containerColor = Color.Transparent
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_add),
-                contentDescription = stringResource(id = R.string.add),
-                tint = DarkGreen,
-                modifier = Modifier.background(Color.Transparent)
-            )
+        when {
+            isLoading -> IsLoading()
+            animals.isNotEmpty() -> AnimalList(navController, animals)
+            else -> NoRegistered(textId = R.string.no_animals)
         }
     }
 }
 
 @Composable
 fun AnimalList(navController: NavHostController, animals: List<Animal>) {
-    if (animals.isEmpty()) {
-        NoRegistered(textId = R.string.no_animals)
-        return
-    }
-
-    val columns: Int
-    val verticalSpace: Dp
-    val verticalGripPadding: Dp
-    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        columns = 2
-        verticalSpace = 16.dp
-        verticalGripPadding = 8.dp
-    } else {
-        columns = 1
-        verticalSpace = 8.dp
-        verticalGripPadding = 0.dp
-    }
+    val columns =
+        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 2 else 1
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(verticalSpace),
-        modifier = Modifier.padding(verticalGripPadding)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(animals.size) {
-            AnimalItem(navController, animals[it])
+        items(animals) { animal ->
+            AnimalCard(navController, animal)
         }
     }
 }
 
 @Composable
-fun AnimalItem(navController: NavHostController, animal: Animal) {
-    GeneralSurface(onClick = {
-        navController.navigate("animalDetail/${animal.id}/${animal.lotId}")
-    }) {
-        ConstraintLayout(
+fun AnimalCard(navController: NavHostController, animal: Animal) {
+    val genderIcon: Int
+    val genderColor: Color
+    if (animal.gender == Gender.Male) {
+        genderIcon = R.drawable.ic_bull
+        genderColor = Blue
+    } else {
+        genderIcon = R.drawable.ic_cow
+        genderColor = Pink
+    }
+    val animalStateInfo = getAnimalStateInfo(animal.state)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { navController.navigate("animalDetail/${animal.id}/${animal.lotId}") },
+        elevation = CardDefaults.cardElevation(1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .background(LightGreenAlpha)
-        ) {
-            val (iconGender, idText, lotText, stateText, bottomLine) = createRefs()
-
-            val guideline1 = createGuidelineFromStart(0.24f)
-            val guideline2 = createGuidelineFromStart(0.62f)
-
-            val icGender: Int
-            val textGender: Int
-            if (animal.gender == Gender.Male) {
-                icGender = R.drawable.ic_bull
-                textGender = R.string.male
-            } else {
-                icGender = R.drawable.ic_cow
-                textGender = R.string.female
-            }
-
-            Column(modifier = Modifier
-                .constrainAs(iconGender) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    bottom.linkTo(parent.bottom)
-                    width = Dimension.fillToConstraints
-                }
+                .fillMaxWidth()
                 .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Icon(
-                    painter = painterResource(id = icGender),
-                    contentDescription = stringResource(R.string.animal_icon),
-                    modifier = Modifier.size(64.dp)
-                )
-                Text(
-                    text = stringResource(
-                        id = textGender
-                    ), style = Typography.bodySmall
-                )
-            }
-
-            Column(
-                modifier = Modifier.constrainAs(idText) {
-                    top.linkTo(parent.top)
-                    start.linkTo(guideline1)
-                    bottom.linkTo(stateText.top)
-                    end.linkTo(guideline2)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
-                }, verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "ID: ${animal.id}", style = Typography.titleSmall
-                )
-            }
-
-            Column(
-                modifier = Modifier.constrainAs(lotText) {
-                    top.linkTo(parent.top)
-                    start.linkTo(guideline2)
-                    bottom.linkTo(stateText.top)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
-                }, verticalArrangement = Arrangement.Center
-            ) {
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                painter = painterResource(id = genderIcon),
+                contentDescription = stringResource(R.string.animal_icon),
+                tint = genderColor,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "ID: ${animal.id}", style = MaterialTheme.typography.titleSmall)
                 if (animal.lotId != 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "LT: ${animal.lotId}", style = Typography.bodyMedium
+                        text = stringResource(id = R.string.lot) + " ${animal.lotId}",
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
-
-            val textState: Int
-            val colorState: Color
-
-            when (animal.state) {
-                State.Healthy -> {
-                    textState = R.string.healthy
-                    colorState = Green
-                }
-
-                State.Sick -> {
-                    textState = R.string.sick
-                    colorState = Orange
-                }
-
-                State.Injured -> {
-                    textState = R.string.injured
-                    colorState = Yellow
-                }
-
-                State.Dead -> {
-                    textState = R.string.dead
-                    colorState = Black
-                }
-
-                State.Sold -> {
-                    textState = R.string.sold
-                    colorState = LightGreenAlpha
-                }
-            }
-
-            Column(
-                modifier = Modifier.constrainAs(stateText) {
-                    top.linkTo(idText.bottom)
-                    start.linkTo(iconGender.end)
-                    bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
-                }, verticalArrangement = Arrangement.Center
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = animalStateInfo.color.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = stringResource(id = textState),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = Typography.bodyLarge,
+                    text = stringResource(id = animalStateInfo.textRes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = animalStateInfo.color,
                     textAlign = TextAlign.Center
-
                 )
             }
-
-            Box(modifier = Modifier
-                .constrainAs(bottomLine) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.value(4.dp)
-                }
-                .background(colorState))
         }
     }
 }
+
+@Composable
+fun getAnimalStateInfo(state: State): AnimalStateInfo {
+    return when (state) {
+        State.Healthy -> AnimalStateInfo(R.string.healthy, DarkGreen)
+        State.Sick -> AnimalStateInfo(R.string.sick, Yellow)
+        State.Injured -> AnimalStateInfo(R.string.injured, Orange)
+        State.Dead -> AnimalStateInfo(R.string.dead, Red)
+        State.Sold -> AnimalStateInfo(R.string.sold, LightGray)
+    }
+}
+
+data class AnimalStateInfo(val textRes: Int, val color: Color)
