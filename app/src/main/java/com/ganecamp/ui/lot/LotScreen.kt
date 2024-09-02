@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,9 +34,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.domain.model.Lot
-import com.ganecamp.ui.general.GeneralSurface
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.theme.DarkGreen
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
@@ -107,12 +110,15 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 
 @Composable
 fun LotItem(navController: NavController, lot: Lot) {
-    GeneralSurface(onClick = {
-        navController.navigate("lotDetail/${lot.id}")
-    }) {
+    Surface(
+        onClick = { navController.navigate(LotDetailNav(lot.id)) },
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxSize(),
+        shadowElevation = 4.dp,
+        color = MaterialTheme.colorScheme.background
+    ) {
         ConstraintLayout(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             val (id, animalCount, bottomLine) = createRefs()
 

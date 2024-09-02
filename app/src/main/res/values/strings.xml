@@ -45,4 +45,5 @@
     <string name="add_weight">Agregar Peso</string>
     <string name="edit_animal">Editar Animal</string>
     <string name="delete_animal">Aliminar Animal</string>
+    <string name="new_animal">Agregar Animal</string>
 </resources>

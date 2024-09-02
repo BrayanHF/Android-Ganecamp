@@ -41,6 +41,7 @@ import com.ganecamp.R
 import com.ganecamp.domain.model.Animal
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.theme.Blue
 import com.ganecamp.ui.theme.DarkGreen
 import com.ganecamp.ui.theme.LightGray
@@ -108,7 +109,7 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { navController.navigate("animalDetail/${animal.id}/${animal.lotId}") },
+            .clickable { navController.navigate(AnimalDetailNav(animal.id)) },
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background

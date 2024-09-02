@@ -5,17 +5,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,9 +38,7 @@ import com.ganecamp.R
 import com.ganecamp.domain.model.Animal
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.LotDetail
-import com.ganecamp.ui.general.GeneralDescriptionCard
 import com.ganecamp.ui.general.IsLoading
-import com.ganecamp.ui.navigation.ScreenInternal
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
@@ -87,9 +91,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
                 FloatingActionButton(
                     onClick = {
                         viewModel.deleteLot(lotId)
-                        navController.navigate("lot") {
-                            popUpTo(ScreenInternal.LotDetail.route) { inclusive = true }
-                        }
+                        navController.popBackStack()
                     },
                     modifier = Modifier
                         .padding(bottom = 8.dp)
@@ -122,11 +124,6 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
 
         }
     }
-}
-
-@Composable
-fun LotDetailTopBarContent() {
-    Text(text = stringResource(id = R.string.lot_detail))
 }
 
 @Composable
@@ -248,5 +245,28 @@ fun AnimalRow(animal: Animal) {
         Text(
             text = animal.state.name, modifier = Modifier.weight(1f), style = Typography.bodyMedium
         )
+    }
+}
+
+@Composable
+fun GeneralDescriptionCard(description: Description) {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val formattedDate = description.date.format(formatter)
+
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
+        modifier = Modifier
+            .padding(8.dp)
+            .width(300.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = description.title, style = Typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = formattedDate, style = Typography.titleSmall, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = description.description, style = Typography.titleSmall)
+        }
     }
 }

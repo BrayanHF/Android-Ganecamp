@@ -31,6 +31,9 @@ class AnimalDetailViewModel @Inject constructor(
     private val _animal = MutableLiveData<AnimalDetail>()
     val animal: LiveData<AnimalDetail> = _animal
 
+    private val _lotId = MutableLiveData<Int>()
+    val lotId: LiveData<Int> = _lotId
+
     private val _vaccines = MutableLiveData<List<Description>>()
     val vaccines: LiveData<List<Description>> = _vaccines
 
@@ -46,35 +49,35 @@ class AnimalDetailViewModel @Inject constructor(
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    init {
-        loadAnimal()
-        loadVaccines()
-        loadEvents()
-        loadWeights()
-    }
-
-    private fun loadWeights() {
+    fun loadWeights() {
         viewModelScope.launch {
             val weights = weightService.animalWeights(animalId)
             _weights.value = weights
         }
     }
 
-    private fun loadEvents() {
+    fun loadEvents() {
         viewModelScope.launch {
             val events = eventService.animalEvents(animalId)
             _events.value = events
         }
     }
 
-    private fun loadVaccines() {
+    fun loadVaccines() {
         viewModelScope.launch {
             val vaccines = vaccineService.animalVaccines(animalId)
             _vaccines.value = vaccines
         }
     }
 
-    private fun loadAnimal() {
+    fun loadLotId() {
+        viewModelScope.launch {
+            val lotId = animalService.getLotById(animalId)
+            _lotId.value = lotId
+        }
+    }
+
+    fun loadAnimal() {
         viewModelScope.launch {
             val animal = animalService.getAnimalById(animalId)
             _animal.value = animal

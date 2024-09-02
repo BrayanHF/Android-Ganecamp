@@ -22,7 +22,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.ui.general.DatePickerField
-import com.ganecamp.ui.navigation.ScreenInternal
+import com.ganecamp.ui.navigation.LotFormNav
+import com.ganecamp.ui.navigation.LotsNav
 import java.time.ZonedDateTime
 
 @Composable
@@ -40,8 +41,9 @@ fun LotFormScreen(navController: NavController, lotId: Int = 0) {
 
     LaunchedEffect(lotSaved) {
         if (lotSaved) {
-            navController.navigate("lot") {
-                popUpTo(ScreenInternal.LotForm.route) { inclusive = true }
+            navController.navigate(LotsNav) {
+                popUpTo(LotFormNav(lotId)) { inclusive = true }
+                launchSingleTop = true
             }
         }
     }

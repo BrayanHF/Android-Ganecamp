@@ -1,31 +1,26 @@
 package com.ganecamp.ui.general
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,18 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusEvent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.domain.model.Description
 import com.ganecamp.ui.theme.Black
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
-import com.ganecamp.ui.theme.White
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -70,69 +61,29 @@ fun NoRegistered(textId: Int) {
     }
 }
 
-@Composable
-fun GeneralSurface(onClick: () -> Unit, content: @Composable () -> Unit) {
-    Surface(
-        onClick = { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxSize(),
-        shadowElevation = 4.dp,
-        color = White
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun GeneralDescriptionCard(description: Description) {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val formattedDate = description.date.format(formatter)
-
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp,
-        modifier = Modifier
-            .padding(8.dp)
-            .width(300.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = description.title, style = Typography.titleSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = formattedDate, style = Typography.titleSmall, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = description.description, style = Typography.titleSmall)
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    navController: NavController, content: @Composable RowScope.() -> Unit
+    title: String, onBackClick: () -> Unit, content: @Composable RowScope.() -> Unit = {}
 ) {
-    TopAppBar(title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            content = content
-        )
-    },
-        colors = TopAppBarColors(LightGreen, LightGreen, Black, Black, LightGreen),
+    TopAppBar(
+        title = { Text(text = title, style = Typography.titleSmall) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = LightGreen,
+            titleContentColor = Black,
+            navigationIconContentColor = Black,
+        ),
         navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = onBackClick) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = stringResource(id = R.string.back),
                     modifier = Modifier.size(24.dp)
                 )
             }
-        })
-}
-
-@Composable
-fun DefaultTopBarContent() {
-    Text(text = "tittle")
+        },
+        actions = content
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,30 +97,54 @@ fun DatePickerField(
 
     var showDate by remember { mutableStateOf(false) }
 
+    val formattedDate = selectedDate.format(formatter)
 
-    OutlinedTextField(value = selectedDate.format(formatter),
-        onValueChange = {},
-        label = { Text(stringResource(id = label)) },
-        readOnly = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .onFocusEvent { if (it.isFocused) showDate = true })
-
-    if (showDate) {
-        DatePickerDialog(onDismissRequest = { showDate = false }, confirmButton = {
-            Button(onClick = {
-                showDate = false
-                val date = datePickerState.selectedDateMillis
-                val dateZDT = date?.let { Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC")) }
-                if (dateZDT != null) {
-                    onDateChange(dateZDT)
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(value = formattedDate,
+            onValueChange = {},
+            label = { Text(stringResource(id = label)) },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusEvent { focusEvent ->
+                    if (focusEvent.isFocused) {
+                        showDate = true
+                    }
+                },
+            trailingIcon = {
+                IconButton(onClick = { showDate = !showDate }) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange, contentDescription = "Select date"
+                    )
                 }
-                focusManager.clearFocus()
-            }) {
-                Text(stringResource(id = R.string.confirm))
+            })
+
+        if (showDate) {
+            DatePickerDialog(colors = DatePickerDefaults.colors()
+                .copy(containerColor = MaterialTheme.colorScheme.background),
+                onDismissRequest = {
+                    showDate = false
+                    focusManager.clearFocus()
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        showDate = false
+                        val date = datePickerState.selectedDateMillis
+                        val dateZDT = date?.let {
+                            Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC"))
+                        }
+                        if (dateZDT != null) {
+                            onDateChange(dateZDT)
+                        }
+                        focusManager.clearFocus()
+                    }) {
+                        Text(stringResource(id = R.string.confirm))
+                    }
+                }) {
+                DatePicker(state = datePickerState)
             }
-        }) {
-            DatePicker(state = datePickerState)
         }
     }
 }

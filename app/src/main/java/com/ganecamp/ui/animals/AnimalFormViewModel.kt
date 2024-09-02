@@ -17,7 +17,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.security.SecureRandom
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
@@ -43,6 +42,7 @@ class AnimalFormViewModel @Inject constructor(
             val animal = animalService.getAnimalById(animalId)
             _uiState.value = AnimalFormState(
                 id = animal.id,
+                tag = animal.tag,
                 gender = animal.gender,
                 birthDate = animal.birthDate,
                 purchaseValue = animal.purchaseValue.toString(),
@@ -58,6 +58,10 @@ class AnimalFormViewModel @Inject constructor(
         viewModelScope.launch {
             _lots.value = lotService.getAllLotsIDs()
         }
+    }
+
+    fun loadTag(tag: String) {
+        _uiState.value = _uiState.value.copy(tag = tag)
     }
 
     fun onGenderChange(gender: Gender) {
@@ -90,7 +94,6 @@ class AnimalFormViewModel @Inject constructor(
 
     fun saveAnimal() {
         viewModelScope.launch {
-            val tag = generateUniqueTag()
             val currentState = _uiState.value
 
             val weight: Float = try {
@@ -113,7 +116,7 @@ class AnimalFormViewModel @Inject constructor(
 
             val animal = AnimalDetail(
                 id = currentState.id,
-                tag = tag,
+                tag = currentState.tag,
                 gender = currentState.gender,
                 birthDate = currentState.birthDate,
                 purchaseValue = purchaseValue,
@@ -131,37 +134,24 @@ class AnimalFormViewModel @Inject constructor(
             } else {
                 val lotId = animalService.getLotById(currentState.id)
                 animalService.updateAnimal(animal)
-                if (lotId == 0) {
+                if (currentState.lotId == 0) {
                     animalService.removeFromLot(currentState.id)
-                } else if(lotId != currentState.lotId && currentState.lotId != 0){
-                    animalService.changeLotToAnimal(currentState.id, currentState.lotId)
+                } else {
+                    if (currentState.lotId != lotId && lotId != 0) {
+                        animalService.changeLotToAnimal(currentState.id, currentState.lotId)
+                    } else {
+                        animalService.addLotToAnimal(currentState.id, currentState.lotId)
+                    }
                 }
             }
             _animalSaved.value = true
         }
     }
-
-    // For preview without real tags
-    private fun generateRandomString(): String {
-        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-        val secureRandom = SecureRandom()
-        return (1..10).map { secureRandom.nextInt(chars.length) }.map(chars::get).joinToString("")
-    }
-
-    private suspend fun generateUniqueTag(): String {
-        while (true) {
-            val randomTag = generateRandomString()
-            val id = animalService.getIdByTag(randomTag)
-            if (id == 0) {
-                return randomTag
-            }
-        }
-    }
-
 }
 
 data class AnimalFormState(
     val id: Int = 0,
+    val tag: String = "",
     val gender: Gender = Gender.Male,
     val birthDate: ZonedDateTime = ZonedDateTime.now(),
     val purchaseValue: String = "",

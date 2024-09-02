@@ -1,16 +1,20 @@
 package com.ganecamp.ui.scan
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -24,6 +28,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ganecamp.ui.navigation.AnimalDetailNav
+import com.ganecamp.ui.navigation.AnimalFormNav
 
 @Composable
 fun ScanScreen(navController: NavController) {
@@ -33,9 +39,22 @@ fun ScanScreen(navController: NavController) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val showErrorDialog by viewModel.showErrorDialog.observeAsState(false)
+    val showConfirmDialog by viewModel.showConfirmDialog.observeAsState(false)
+    val animalId by viewModel.animalId.observeAsState()
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        keyboardController?.hide() // Oculta el teclado al inicio
+        keyboardController?.hide()
+    }
+
+    LaunchedEffect(animalId) {
+        animalId?.let {
+            if (it > 0) {
+                navController.navigate(AnimalDetailNav(it))
+                viewModel.resetAnimalId()
+            }
+        }
     }
 
     Column(
@@ -43,10 +62,9 @@ fun ScanScreen(navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Por favor, escane el TAG o escriba el ID del TAG:")
+        Text("Por favor, escanee el TAG o escriba el ID del TAG:")
 
-        TextField(
-            value = rfidText.value,
+        TextField(value = rfidText.value,
             onValueChange = { newValue ->
                 rfidText.value = newValue
             },
@@ -55,7 +73,7 @@ fun ScanScreen(navController: NavController) {
                 .fillMaxWidth()
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.key == Key.Enter) {
-                        navController.navigate("formAnimal/0")
+                        viewModel.onTagReceived(rfidText.value)
                         true
                     } else {
                         false
@@ -63,11 +81,41 @@ fun ScanScreen(navController: NavController) {
                 },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             singleLine = true,
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    navController.navigate("formAnimal/0")
-                }
-            )
+            keyboardActions = KeyboardActions(onDone = {
+                viewModel.onTagReceived(rfidText.value)
+            })
         )
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(containerColor = MaterialTheme.colorScheme.background,
+            onDismissRequest = { viewModel.closeErrorDialog() },
+            title = { Text("Error") },
+            text = { Text("Hubo un error al buscar el TAG. Inténtalo de nuevo.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.closeErrorDialog() }) {
+                    Text("Cerrar")
+                }
+            })
+    }
+
+    if (showConfirmDialog) {
+        AlertDialog(containerColor = MaterialTheme.colorScheme.background,
+            onDismissRequest = { viewModel.closeConfirmDialog() },
+            title = { Text("TAG No Encontrado") },
+            text = { Text("Este TAG no está en la base de datos. ¿Deseas agregarlo?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.closeConfirmDialog()
+                    navController.navigate(AnimalFormNav(0, rfidText.value))
+                }) {
+                    Text("Agregar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.closeConfirmDialog() }) {
+                    Text("Cancelar")
+                }
+            })
     }
 }
