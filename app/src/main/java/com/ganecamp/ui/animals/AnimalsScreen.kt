@@ -1,6 +1,7 @@
 package com.ganecamp.ui.animals
 
 import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +21,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,16 +40,9 @@ import com.ganecamp.R
 import com.ganecamp.domain.model.Animal
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.navigation.AnimalDetailNav
-import com.ganecamp.ui.theme.Blue
-import com.ganecamp.ui.theme.DarkGreen
-import com.ganecamp.ui.theme.LightGray
-import com.ganecamp.ui.theme.Orange
-import com.ganecamp.ui.theme.Pink
-import com.ganecamp.ui.theme.Red
-import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.Gender
-import com.ganecamp.utilities.enums.State
 
 @Composable
 fun AnimalScreen(navController: NavHostController) {
@@ -61,10 +53,11 @@ fun AnimalScreen(navController: NavHostController) {
     LaunchedEffect(navController.currentBackStackEntry) {
         viewModel.loadAnimals()
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp)
             .background(MaterialTheme.colorScheme.background)
     ) {
         when {
@@ -94,14 +87,10 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
 
 @Composable
 fun AnimalCard(navController: NavHostController, animal: Animal) {
-    val genderIcon: Int
-    val genderColor: Color
-    if (animal.gender == Gender.Male) {
-        genderIcon = R.drawable.ic_bull
-        genderColor = Blue
+    val genderIcon: Int = if (animal.gender == Gender.Male) {
+        R.drawable.ic_bull
     } else {
-        genderIcon = R.drawable.ic_cow
-        genderColor = Pink
+        R.drawable.ic_cow
     }
     val animalStateInfo = getAnimalStateInfo(animal.state)
 
@@ -111,9 +100,7 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
             .padding(8.dp)
             .clickable { navController.navigate(AnimalDetailNav(animal.id)) },
         elevation = CardDefaults.cardElevation(1.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -122,10 +109,9 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id = genderIcon),
                 contentDescription = stringResource(R.string.animal_icon),
-                tint = genderColor,
                 modifier = Modifier.size(40.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -158,16 +144,3 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
         }
     }
 }
-
-@Composable
-fun getAnimalStateInfo(state: State): AnimalStateInfo {
-    return when (state) {
-        State.Healthy -> AnimalStateInfo(R.string.healthy, DarkGreen)
-        State.Sick -> AnimalStateInfo(R.string.sick, Yellow)
-        State.Injured -> AnimalStateInfo(R.string.injured, Orange)
-        State.Dead -> AnimalStateInfo(R.string.dead, Red)
-        State.Sold -> AnimalStateInfo(R.string.sold, LightGray)
-    }
-}
-
-data class AnimalStateInfo(val textRes: Int, val color: Color)

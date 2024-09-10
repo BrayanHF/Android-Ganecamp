@@ -46,4 +46,8 @@
     <string name="edit_animal">Editar Animal</string>
     <string name="delete_animal">Aliminar Animal</string>
     <string name="new_animal">Agregar Animal</string>
+    <string name="error_more_than_one_point">No puede haber mas de un punto</string>
+    <string name="error_invalid_characters">Caracteres Invalidos</string>
+    <string name="calendar">Calendario</string>
+    <string name="approximate_purchase_value">Aproximado venta</string>
 </resources>

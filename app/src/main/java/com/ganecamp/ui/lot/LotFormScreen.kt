@@ -59,11 +59,6 @@ fun LotFormScreen(navController: NavController, lotId: Int = 0) {
 }
 
 @Composable
-fun LotFormTopBarContent() {
-    Text(text = stringResource(id = R.string.add_animal))
-}
-
-@Composable
 fun AnimalFormContent(
     state: LotFormState,
     onPurchaseValueChange: (String) -> Unit,

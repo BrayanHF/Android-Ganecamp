@@ -1,13 +1,14 @@
 package com.ganecamp.ui.general
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -29,13 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ganecamp.R
-import com.ganecamp.ui.theme.Black
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
 import java.time.Instant
@@ -54,9 +56,11 @@ fun IsLoading() {
 
 @Composable
 fun NoRegistered(textId: Int) {
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+    ) {
         Text(
-            text = stringResource(id = textId), style = Typography.bodyLarge
+            text = stringResource(id = textId), style = Typography.bodyMedium
         )
     }
 }
@@ -70,8 +74,8 @@ fun TopBar(
         title = { Text(text = title, style = Typography.titleSmall) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = LightGreen,
-            titleContentColor = Black,
-            navigationIconContentColor = Black,
+            titleContentColor = MaterialTheme.colorScheme.secondary,
+            navigationIconContentColor = MaterialTheme.colorScheme.secondary,
         ),
         navigationIcon = {
             IconButton(onClick = onBackClick) {
@@ -114,11 +118,11 @@ fun DatePickerField(
                     }
                 },
             trailingIcon = {
-                IconButton(onClick = { showDate = !showDate }) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange, contentDescription = "Select date"
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.ic_calendar),
+                    contentDescription = stringResource(id = R.string.calendar),
+                    modifier = Modifier.size(24.dp)
+                )
             })
 
         if (showDate) {
@@ -135,9 +139,7 @@ fun DatePickerField(
                         val dateZDT = date?.let {
                             Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC"))
                         }
-                        if (dateZDT != null) {
-                            onDateChange(dateZDT)
-                        }
+                        if (dateZDT != null) onDateChange(dateZDT)
                         focusManager.clearFocus()
                     }) {
                         Text(stringResource(id = R.string.confirm))
@@ -145,6 +147,45 @@ fun DatePickerField(
                 }) {
                 DatePicker(state = datePickerState)
             }
+        }
+    }
+}
+
+@Composable
+fun NumberTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    isError: Boolean,
+    errorMessage: String,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    var hasFocus by remember { mutableStateOf(false) }
+
+    Column {
+        OutlinedTextField(value = if (hasFocus) value else formatNumber(value),
+            onValueChange = { newValue ->
+                val sanitizedValue = sanitizeNumberDuringTyping(newValue)
+                onValueChange(sanitizedValue)
+            },
+            label = { Text(text = label) },
+            isError = isError,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged {
+                    hasFocus = it.isFocused
+                    if (!it.isFocused) {
+                        onValueChange(formatNumber(value))
+                    }
+                },
+            trailingIcon = { trailingIcon?.invoke() })
+        if (isError) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

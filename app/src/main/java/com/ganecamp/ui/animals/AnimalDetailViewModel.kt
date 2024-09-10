@@ -46,6 +46,9 @@ class AnimalDetailViewModel @Inject constructor(
     private val _ageAnimal = MutableLiveData<Triple<Int, Int, Int>>()
     val ageAnimal: LiveData<Triple<Int, Int, Int>> get() = _ageAnimal
 
+    private val _weightValue = MutableLiveData<Float>()
+    val weightValue: LiveData<Float> = _weightValue
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
@@ -84,6 +87,11 @@ class AnimalDetailViewModel @Inject constructor(
             calculateAge(animal.birthDate)
             _isLoading.value = false
         }
+    }
+
+    fun loadWeightValue() {
+        // Todo: Implement this function where the weight value is in an external service
+        //  and in the offline case it has a local value
     }
 
     private fun calculateAge(birthDate: ZonedDateTime) {

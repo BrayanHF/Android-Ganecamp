@@ -1,14 +1,18 @@
 package com.ganecamp.ui.animals
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,15 +34,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.ui.general.DatePickerField
+import com.ganecamp.ui.general.ErrorMessages
+import com.ganecamp.ui.general.NumberTextField
 import com.ganecamp.ui.general.TopBar
+import com.ganecamp.ui.general.geAnimalGenderInfo
+import com.ganecamp.ui.general.getAnimalStateInfo
+import com.ganecamp.ui.general.validateNumber
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
+import com.ganecamp.ui.theme.Green
+import com.ganecamp.ui.theme.Red
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import java.time.ZonedDateTime
@@ -106,15 +116,19 @@ fun AnimalFormContent(
     onLotChange: (Int) -> Unit,
     onSaveClick: () -> Unit
 ) {
+    val errorMessages = ErrorMessages(
+        moreThanOnePointError = stringResource(id = R.string.error_more_than_one_point),
+        invalidCharactersError = stringResource(id = R.string.error_invalid_characters)
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
         GenderDropdown(selectedGender = state.gender, onGenderChange = onGenderChange)
-
         StateDropdown(selectedState = state.state, onStateChange = onStateChange)
 
         DatePickerField(
@@ -125,36 +139,64 @@ fun AnimalFormContent(
 
         LotDropdown(lots = lots, selectedLot = state.lotId, onLotChange = onLotChange)
 
+        val weightError = validateNumber(state.weight, errorMessages)
         if (state.id == 0) {
-            OutlinedTextField(
-                value = state.weight,
-                onValueChange = onWeightChange,
-                label = { Text(text = stringResource(id = R.string.weight)) },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            NumberTextField(value = state.weight,
+                onValueChange = {
+                    onWeightChange(it)
+                },
+                label = stringResource(id = R.string.weight),
+                isError = weightError != null,
+                errorMessage = weightError ?: "",
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_weight),
+                        contentDescription = stringResource(id = R.string.weight),
+                        modifier = Modifier.size(24.dp)
+                    )
+                })
         }
 
-        OutlinedTextField(
-            value = state.purchaseValue,
-            onValueChange = onPurchaseValueChange,
-            label = { Text(stringResource(id = R.string.purchase_value)) },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
+        val purchaseValueError = validateNumber(state.purchaseValue, errorMessages)
+        NumberTextField(value = state.purchaseValue,
+            onValueChange = {
+                onPurchaseValueChange(it)
+            },
+            label = stringResource(id = R.string.purchase_value),
+            isError = purchaseValueError != null,
+            errorMessage = purchaseValueError ?: "",
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_dollar),
+                    contentDescription = stringResource(id = R.string.purchase_value),
+                    modifier = Modifier.size(24.dp),
+                    tint = Red
+                )
+            })
 
+        val saleValueError = validateNumber(state.saleValue, errorMessages)
         if (state.state == State.Sold) {
-            OutlinedTextField(
-                value = state.saleValue,
-                onValueChange = onSaleValueChange,
-                label = { Text(stringResource(id = R.string.sale_value)) },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            NumberTextField(value = state.saleValue,
+                onValueChange = {
+                    onSaleValueChange(it)
+                },
+                label = stringResource(id = R.string.sale_value),
+                isError = saleValueError != null,
+                errorMessage = saleValueError ?: "",
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_dollar),
+                        contentDescription = stringResource(id = R.string.sale_value),
+                        modifier = Modifier.size(24.dp),
+                        tint = Green
+                    )
+                })
         }
 
         Button(
-            onClick = onSaveClick, modifier = Modifier.align(Alignment.End)
+            onClick = onSaveClick,
+            modifier = Modifier.align(Alignment.End),
+            enabled = (state.id != 0 || weightError == null) && purchaseValueError == null && (state.state != State.Sold || saleValueError == null)
         ) {
             Text(stringResource(id = R.string.save))
         }
@@ -165,50 +207,42 @@ fun AnimalFormContent(
 @Composable
 fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-
-    val (icGender, textGender) = when (selectedGender) {
-        Gender.Male -> R.drawable.ic_bull to R.string.male
-        else -> R.drawable.ic_cow to R.string.female
-    }
+    val genderInfo = geAnimalGenderInfo(selectedGender)
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = stringResource(id = textGender),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = icGender),
-                    contentDescription = stringResource(id = textGender),
+        OutlinedTextField(value = stringResource(id = genderInfo.textRes),
+            trailingIcon = {
+                Image(
+                    painter = painterResource(id = genderInfo.iconRes),
+                    contentDescription = stringResource(id = genderInfo.textRes),
                     modifier = Modifier.size(24.dp)
                 )
             },
             onValueChange = {},
-            label = { Text(text = stringResource(id = R.string.gender)) },
+            label = { Text(stringResource(id = R.string.gender)) },
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor()
         )
-
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             Gender.entries.forEach { gender ->
-                val (itemIcGender, itemTextGender) = when (gender) {
-                    Gender.Male -> R.drawable.ic_bull to R.string.male
-                    else -> R.drawable.ic_cow to R.string.female
-                }
-                DropdownMenuItem(leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = itemIcGender),
-                        contentDescription = stringResource(id = itemTextGender),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }, onClick = {
+                val itemInfo = geAnimalGenderInfo(gender)
+                DropdownMenuItem(onClick = {
                     onGenderChange(gender)
                     expanded = false
                 }, text = {
-                    Text(stringResource(id = itemTextGender))
+                    Text(stringResource(id = itemInfo.textRes))
+                }, trailingIcon = {
+                    Image(
+                        painter = painterResource(id = itemInfo.iconRes),
+                        contentDescription = stringResource(id = itemInfo.textRes),
+                        modifier = Modifier.size(24.dp)
+                    )
                 })
             }
         }
@@ -219,48 +253,53 @@ fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
 @Composable
 fun StateDropdown(selectedState: State, onStateChange: (State) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-
-    // Define your text based on the selected state
-    val textState = when (selectedState) {
-        State.Healthy -> R.string.healthy
-        State.Sick -> R.string.sick
-        State.Injured -> R.string.injured
-        State.Dead -> R.string.dead
-        State.Sold -> R.string.sold
-    }
+    val stateInfo = getAnimalStateInfo(selectedState)
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = stringResource(id = textState),
+        OutlinedTextField(value = stringResource(id = stateInfo.textRes),
             onValueChange = {},
             label = { Text(stringResource(id = R.string.state)) },
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor()
-        )
-
+                .menuAnchor(),
+            trailingIcon = {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .background(stateInfo.color, shape = CircleShape)
+                )
+            })
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             State.entries.forEach { state ->
-                val itemTextState = when (state) {
-                    State.Healthy -> R.string.healthy
-                    State.Sick -> R.string.sick
-                    State.Injured -> R.string.injured
-                    State.Dead -> R.string.dead
-                    State.Sold -> R.string.sold
-                }
-                DropdownMenuItem(text = { Text(stringResource(id = itemTextState)) }, onClick = {
+                val itemInfo = getAnimalStateInfo(state)
+                DropdownMenuItem(onClick = {
                     onStateChange(state)
                     expanded = false
+                }, text = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = itemInfo.textRes),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .background(itemInfo.color, shape = CircleShape)
+                        )
+                    }
                 })
             }
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -268,27 +307,36 @@ fun LotDropdown(lots: List<Int>, selectedLot: Int?, onLotChange: (Int) -> Unit) 
     var expanded by remember { mutableStateOf(false) }
     val lotsWithZero = listOf(0) + lots
 
-    val valueField = selectedLot?.toString() ?: lotsWithZero.first().toString()
-
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = valueField,
+        OutlinedTextField(value = formatLot(selectedLot),
             onValueChange = {},
             label = { Text(stringResource(id = R.string.lot)) },
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor()
-        )
-
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = {
-            expanded = false
-        }, modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                .menuAnchor(),
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lot),
+                    contentDescription = stringResource(id = R.string.lots),
+                    modifier = Modifier.size(24.dp)
+                )
+            })
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        ) {
             lotsWithZero.forEach { lot ->
-                DropdownMenuItem(text = { Text(lot.toString()) }, onClick = {
+                DropdownMenuItem(onClick = {
                     onLotChange(lot)
                     expanded = false
+                }, text = {
+                    Text(formatLot(lot))
                 })
             }
         }
     }
 }
+
+private fun formatLot(lot: Int?) = if (lot == null || lot == 0) "ND" else lot.toString()

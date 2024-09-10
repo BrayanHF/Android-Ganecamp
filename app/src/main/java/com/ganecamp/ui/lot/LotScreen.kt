@@ -37,9 +37,7 @@ import com.ganecamp.domain.model.Lot
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.navigation.LotDetailNav
-import com.ganecamp.ui.theme.DarkGreen
 import com.ganecamp.ui.theme.Typography
-import com.ganecamp.ui.theme.White
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -55,7 +53,7 @@ fun LotScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
-            .background(White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (isLoading) {
             IsLoading()
@@ -75,7 +73,6 @@ fun LotScreen(navController: NavController) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_add),
                 contentDescription = stringResource(id = R.string.add),
-                tint = DarkGreen,
                 modifier = Modifier.background(Color.Transparent)
             )
         }
@@ -162,7 +159,7 @@ fun LotItem(navController: NavController, lot: Lot) {
                     width = Dimension.fillToConstraints
                     height = Dimension.value(4.dp)
                 }
-                .background(DarkGreen))
+                .background(MaterialTheme.colorScheme.onSurface))
         }
     }
 }

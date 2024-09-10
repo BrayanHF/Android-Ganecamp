@@ -39,10 +39,10 @@ import com.ganecamp.domain.model.Animal
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.LotDetail
 import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
-import com.ganecamp.ui.theme.White
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -60,10 +60,8 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
     val animals: List<Animal> by viewModel.animals.observeAsState(initial = emptyList())
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .background(White)
+        modifier = Modifier.fillMaxSize().padding(8.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (isLoading) {
             IsLoading()
@@ -108,7 +106,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
                 }
 
                 FloatingActionButton(
-                    onClick = { navController.navigate("formLot/${lotId}") },
+                    onClick = { navController.navigate(LotFormNav(lotId)) },
                     modifier = Modifier.size(56.dp),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp),
                     containerColor = Color.Transparent

@@ -11,6 +11,7 @@ import com.ganecamp.domain.services.AnimalService
 import com.ganecamp.domain.services.EventService
 import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.services.WeightService
+import com.ganecamp.ui.general.formatNumber
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,8 +46,8 @@ class AnimalFormViewModel @Inject constructor(
                 tag = animal.tag,
                 gender = animal.gender,
                 birthDate = animal.birthDate,
-                purchaseValue = animal.purchaseValue.toString(),
-                saleValue = animal.saleValue.toString(),
+                purchaseValue = formatNumber(animal.purchaseValue.toString()),
+                saleValue = formatNumber(animal.saleValue.toString()),
                 state = animal.state,
                 lotId = animalService.getLotById(animalId),
                 weight = 0f.toString()
