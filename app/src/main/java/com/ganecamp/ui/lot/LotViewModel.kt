@@ -19,10 +19,6 @@ class LotViewModel @Inject constructor(private val lotService: LotService) : Vie
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    init {
-        loadLots()
-    }
-
     fun loadLots() {
         viewModelScope.launch {
             _lots.value = lotService.getAllLots()

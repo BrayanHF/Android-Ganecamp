@@ -1,4 +1,4 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -31,6 +31,9 @@ class AnimalDetailViewModel @Inject constructor(
     private val _animal = MutableLiveData<AnimalDetail>()
     val animal: LiveData<AnimalDetail> = _animal
 
+    private val _lotId = MutableLiveData<Int>()
+    val lotId: LiveData<Int> = _lotId
+
     private val _vaccines = MutableLiveData<List<Description>>()
     val vaccines: LiveData<List<Description>> = _vaccines
 
@@ -43,44 +46,52 @@ class AnimalDetailViewModel @Inject constructor(
     private val _ageAnimal = MutableLiveData<Triple<Int, Int, Int>>()
     val ageAnimal: LiveData<Triple<Int, Int, Int>> get() = _ageAnimal
 
+    private val _weightValue = MutableLiveData<Float>()
+    val weightValue: LiveData<Float> = _weightValue
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    init {
-        loadAnimal()
-        loadVaccines()
-        loadEvents()
-        loadWeights()
-    }
-
-    private fun loadWeights() {
+    fun loadWeights() {
         viewModelScope.launch {
             val weights = weightService.animalWeights(animalId)
             _weights.value = weights
         }
     }
 
-    private fun loadEvents() {
+    fun loadEvents() {
         viewModelScope.launch {
             val events = eventService.animalEvents(animalId)
             _events.value = events
         }
     }
 
-    private fun loadVaccines() {
+    fun loadVaccines() {
         viewModelScope.launch {
             val vaccines = vaccineService.animalVaccines(animalId)
             _vaccines.value = vaccines
         }
     }
 
-    private fun loadAnimal() {
+    fun loadLotId() {
+        viewModelScope.launch {
+            val lotId = animalService.getLotById(animalId)
+            _lotId.value = lotId
+        }
+    }
+
+    fun loadAnimal() {
         viewModelScope.launch {
             val animal = animalService.getAnimalById(animalId)
             _animal.value = animal
             calculateAge(animal.birthDate)
             _isLoading.value = false
         }
+    }
+
+    fun loadWeightValue() {
+        // Todo: Implement this function where the weight value is in an external service
+        //  and in the offline case it has a local value
     }
 
     private fun calculateAge(birthDate: ZonedDateTime) {

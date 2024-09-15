@@ -1,11 +1,10 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,11 +22,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -44,21 +44,23 @@ import com.ganecamp.domain.model.AnimalDetail
 import com.ganecamp.domain.model.Description
 import com.ganecamp.domain.model.Weight
 import com.ganecamp.ui.general.IsLoading
-import com.ganecamp.ui.navigation.ScreenInternal
-import com.ganecamp.ui.theme.Blue
-import com.ganecamp.ui.theme.DarkGray
+import com.ganecamp.ui.general.TopBar
+import com.ganecamp.ui.general.formatNumber
+import com.ganecamp.ui.navigation.AnimalDetailNav
+import com.ganecamp.ui.navigation.AnimalFormNav
+import com.ganecamp.ui.navigation.AnimalsNav
+import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
-import com.ganecamp.ui.theme.Pink
+import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Red
-import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AnimalDetailScreen(navController: NavHostController, animalId: Int, lotId: Int) {
+fun AnimalDetailScreen(navController: NavHostController, animalId: Int) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.observeAsState(initial = true)
     val animalDetail: AnimalDetail by viewModel.animal.observeAsState(
@@ -66,60 +68,69 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int, lotId: I
             "", animalId, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
         )
     )
+    val lotId by viewModel.lotId.observeAsState(initial = 0)
     val vaccines: List<Description> by viewModel.vaccines.observeAsState(initial = emptyList())
     val events: List<Description> by viewModel.events.observeAsState(initial = emptyList())
     val weights: List<Weight> by viewModel.weights.observeAsState(initial = emptyList())
     val age by viewModel.ageAnimal.observeAsState(initial = Triple(0, 0, 0))
+    val weightValue by viewModel.weightValue.observeAsState(initial = 4000f)
 
-    BackHandler {
-        navController.navigate("animal") {
-            popUpTo(ScreenInternal.AnimalForm.route) { inclusive = true }
-        }
+
+
+    LaunchedEffect(animalId) {
+        viewModel.loadAnimal()
+        viewModel.loadLotId()
+        viewModel.loadVaccines()
+        viewModel.loadEvents()
+        viewModel.loadWeights()
+        viewModel.loadWeightValue()
     }
 
-    if (isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(White)
-        ) {
+    Scaffold(topBar = {
+        TopBar(title = stringResource(id = R.string.animal_detail),
+            onBackClick = { navController.popBackStack() })
+    }) { innerPadding ->
+        if (isLoading) {
             IsLoading()
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            AnimalInfo(navController, animalDetail, lotId, age)
-            SectionWithLazyRow(titleRes = R.string.vaccines,
-                items = vaccines,
-                cardContent = { VaccineCard(it) },
-                addActionTextRes = R.string.add_vaccine,
-                onClickAdd = { })
-            SectionWithLazyRow(titleRes = R.string.events,
-                items = events,
-                cardContent = { EventCard(it) },
-                addActionTextRes = R.string.add_event,
-                onClickAdd = { })
-            AnimalWeights(weights = weights, onClickAdd = { })
-            OutlinedButton(
-                onClick = {
-                    viewModel.deleteAnimal(animalId)
-                    navController.navigate("animal") {
-                        popUpTo(ScreenInternal.AnimalDetail.route) { inclusive = true }
-                    }
-                },
-                shape = RoundedCornerShape(50),
-                border = BorderStroke(1.dp, Red),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent
-                ),
-                modifier = Modifier.padding(8.dp)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(innerPadding)
             ) {
-                Text(
-                    text = stringResource(id = R.string.delete_animal), color = Red
+                AnimalInfo(
+                    navController, animalDetail, lotId, age, weights.first().weight * weightValue
                 )
+                SectionWithLazyRow(titleRes = R.string.vaccines,
+                    items = vaccines,
+                    cardContent = { VaccineCard(it) },
+                    addActionTextRes = R.string.add_vaccine,
+                    onClickAdd = { /*TODO*/ })
+                SectionWithLazyRow(titleRes = R.string.events,
+                    items = events,
+                    cardContent = { EventCard(it) },
+                    addActionTextRes = R.string.add_event,
+                    onClickAdd = { /*TODO*/ })
+                AnimalWeights(weights = weights, onClickAdd = { /*TODO*/ })
+                OutlinedButton(
+                    onClick = {
+                        viewModel.deleteAnimal(animalId)
+                        navController.navigate(AnimalsNav) {
+                            popUpTo(AnimalDetailNav) { inclusive = true }
+                        }
+                    },
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, Red),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.delete_animal), color = Red
+                    )
+                }
             }
         }
     }
@@ -130,14 +141,14 @@ fun AnimalInfo(
     navController: NavHostController,
     animalDetail: AnimalDetail,
     lotId: Int,
-    age: Triple<Int, Int, Int>
+    age: Triple<Int, Int, Int>,
+    approxSale: Float,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Column(
@@ -151,20 +162,15 @@ fun AnimalInfo(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val genderIcon: Int
-                val genderColor: Color
-                if (animalDetail.gender == Gender.Male) {
-                    genderIcon = R.drawable.ic_bull
-                    genderColor = Blue
+                val genderIcon: Int = if (animalDetail.gender == Gender.Male) {
+                    R.drawable.ic_bull
                 } else {
-                    genderIcon = R.drawable.ic_cow
-                    genderColor = Pink
+                    R.drawable.ic_cow
                 }
-                Icon(
+                Image(
                     painter = painterResource(id = genderIcon),
                     contentDescription = stringResource(R.string.animal_icon),
                     modifier = Modifier.size(56.dp),
-                    tint = genderColor
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -179,7 +185,11 @@ fun AnimalInfo(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedButton(
-                    onClick = { navController.navigate("formAnimal/${animalDetail.id}") },
+                    onClick = {
+                        navController.navigate(
+                            AnimalFormNav(animalDetail.id, animalDetail.tag)
+                        )
+                    },
                     shape = RoundedCornerShape(50),
                     border = BorderStroke(1.dp, LightBlue),
                     colors = ButtonDefaults.outlinedButtonColors(
@@ -199,18 +209,27 @@ fun AnimalInfo(
                 value = animalDetail.birthDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 titleRes2 = R.string.age,
                 value2 = when {
-                    age.first > 0 -> "${age.first} años"
-                    age.second > 0 -> "${age.second} meses"
-                    else -> "${age.third} días"
+                    age.first > 0 -> "${age.first} " + stringResource(id = R.string.years)
+                    age.second > 0 -> "${age.second} " + stringResource(id = R.string.months)
+                    else -> "${age.third} " + stringResource(id = R.string.days)
                 }
             )
 
-            InfoRow(
-                titleRes = R.string.purchase_value,
-                value = "$${animalDetail.purchaseValue}",
-                titleRes2 = R.string.sale_value,
-                value2 = "$${animalDetail.saleValue}"
-            )
+            if (animalDetail.state == State.Sold) {
+                InfoRow(
+                    titleRes = R.string.purchase_value,
+                    value = "$" + formatNumber(animalDetail.purchaseValue.toString()),
+                    titleRes2 = R.string.sale_value,
+                    value2 = "$" + formatNumber(animalDetail.saleValue.toString())
+                )
+            } else {
+                InfoRow(
+                    titleRes = R.string.purchase_value,
+                    value = "$" + formatNumber(animalDetail.purchaseValue.toString()),
+                    titleRes2 = R.string.approximate_purchase_value,
+                    value2 = "$" + formatNumber(approxSale.toString())
+                )
+            }
         }
     }
 }
@@ -227,17 +246,17 @@ fun InfoRowWithClickableLot(
         Column(modifier = Modifier
             .weight(1f)
             .background(
-                color = if (lotId != 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
+                color = if (lotId != 0) Green.copy(alpha = 0.2f) else Color.Transparent,
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(enabled = lotId != 0) {
-                if (lotId != 0) navController.navigate("lotDetail/$lotId")
+                if (lotId != 0) navController.navigate(LotDetailNav(lotId))
             }
             .padding(top = 16.dp, bottom = 16.dp, start = 16.dp, end = 32.dp)) {
             Text(
                 text = stringResource(id = R.string.lot),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Text(
                 text = if (lotId == 0) "ND" else lotId.toString(),
@@ -252,7 +271,7 @@ fun InfoRowWithClickableLot(
             Text(
                 text = stringResource(id = R.string.state),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Text(
                 text = stringResource(
@@ -286,7 +305,7 @@ fun InfoRow(
             Text(
                 text = stringResource(id = titleRes),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Text(
                 text = value, style = MaterialTheme.typography.bodyMedium
@@ -300,7 +319,7 @@ fun InfoRow(
             Text(
                 text = stringResource(id = titleRes2),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Text(
                 text = value2, style = MaterialTheme.typography.bodyMedium
@@ -362,7 +381,6 @@ fun VaccineCard(vaccine: Description) {
             .width(256.dp)
             .padding(end = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Column(
@@ -373,7 +391,7 @@ fun VaccineCard(vaccine: Description) {
             Text(
                 text = vaccine.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = vaccine.description, style = MaterialTheme.typography.bodySmall)
@@ -388,7 +406,6 @@ fun EventCard(event: Description) {
             .width(256.dp)
             .padding(end = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Column(
@@ -399,7 +416,7 @@ fun EventCard(event: Description) {
             Text(
                 text = event.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 style = MaterialTheme.typography.bodySmall,
-                color = DarkGray
+                color = LightGray
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = event.description, style = MaterialTheme.typography.bodySmall)
@@ -429,7 +446,6 @@ fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                shape = MaterialTheme.shapes.medium,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
             ) {
                 weights.forEach { weight ->
@@ -456,12 +472,4 @@ fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
             }
         }
     }
-}
-
-@Composable
-fun AnimalDetailTopBarContent() {
-    Text(
-        text = stringResource(id = R.string.animal_detail),
-        style = MaterialTheme.typography.titleMedium
-    )
 }

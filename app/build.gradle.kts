@@ -4,6 +4,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 android {
@@ -43,10 +44,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
     }
 
     packaging {
@@ -95,5 +92,8 @@ dependencies {
     implementation (libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.runtime.livedata)
+
+    // Serialization
+    implementation(libs.kotlinx.serialization.json)
 
 }

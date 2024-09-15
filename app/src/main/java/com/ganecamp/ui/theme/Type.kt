@@ -22,7 +22,6 @@ val Typography = Typography(
         fontSize = 28.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     ),
     bodyMedium = TextStyle(
         fontFamily = Roboto,
@@ -30,7 +29,6 @@ val Typography = Typography(
         fontSize = 22.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     ),
     bodySmall = TextStyle(
         fontFamily = Roboto,
@@ -38,7 +36,6 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     ),
     titleLarge = TextStyle(
         fontFamily = Roboto,
@@ -46,7 +43,6 @@ val Typography = Typography(
         fontSize = 28.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     ),
     titleMedium = TextStyle(
         fontFamily = Roboto,
@@ -54,7 +50,6 @@ val Typography = Typography(
         fontSize = 22.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     ),
     titleSmall = TextStyle(
         fontFamily = Roboto,
@@ -62,6 +57,5 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = Black
     )
 )
