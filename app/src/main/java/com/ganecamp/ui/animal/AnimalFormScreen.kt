@@ -1,4 +1,4 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

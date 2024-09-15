@@ -1,9 +1,8 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -97,8 +96,8 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { navController.navigate(AnimalDetailNav(animal.id)) },
+            .padding(8.dp),
+        onClick = { navController.navigate(AnimalDetailNav(animal.id)) },
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {

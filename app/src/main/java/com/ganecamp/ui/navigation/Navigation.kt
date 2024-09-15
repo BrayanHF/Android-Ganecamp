@@ -10,9 +10,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.ganecamp.ui.animals.AnimalDetailScreen
-import com.ganecamp.ui.animals.AnimalFormScreen
-import com.ganecamp.ui.animals.AnimalScreen
+import com.ganecamp.ui.animal.AnimalDetailScreen
+import com.ganecamp.ui.animal.AnimalFormScreen
+import com.ganecamp.ui.animal.AnimalScreen
 import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotFormScreen
 import com.ganecamp.ui.lot.LotScreen

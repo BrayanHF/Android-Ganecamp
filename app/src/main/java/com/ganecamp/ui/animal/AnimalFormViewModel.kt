@@ -1,4 +1,4 @@
-package com.ganecamp.ui.animals
+package com.ganecamp.ui.animal
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
