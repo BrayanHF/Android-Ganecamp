@@ -8,15 +8,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -28,8 +29,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
+import com.ganecamp.utilities.enums.FirestoreRespond
 
 @Composable
 fun ScanScreen(navController: NavController) {
@@ -39,9 +42,10 @@ fun ScanScreen(navController: NavController) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val showErrorDialog by viewModel.showErrorDialog.observeAsState(false)
-    val showConfirmDialog by viewModel.showConfirmDialog.observeAsState(false)
-    val animalId by viewModel.animalId.observeAsState()
+    val showErrorDialog by viewModel.showErrorDialog.collectAsState(false)
+    val showConfirmDialog by viewModel.showConfirmDialog.collectAsState(false)
+    val animalId by viewModel.animalId.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -49,12 +53,21 @@ fun ScanScreen(navController: NavController) {
     }
 
     LaunchedEffect(animalId) {
-        animalId?.let {
-            if (it > 0) {
-                navController.navigate(AnimalDetailNav(it))
-                viewModel.resetAnimalId()
-            }
+        if (animalId != null) {
+            navController.navigate(AnimalDetailNav(animalId!!))
+            viewModel.resetAnimalId()
         }
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
     }
 
     Column(
@@ -64,7 +77,8 @@ fun ScanScreen(navController: NavController) {
     ) {
         Text("Por favor, escanee el TAG o escriba el ID del TAG:")
 
-        TextField(value = rfidText.value,
+        OutlinedTextField(
+            value = rfidText.value,
             onValueChange = { newValue ->
                 rfidText.value = newValue
             },
@@ -91,7 +105,7 @@ fun ScanScreen(navController: NavController) {
         AlertDialog(containerColor = MaterialTheme.colorScheme.background,
             onDismissRequest = { viewModel.closeErrorDialog() },
             title = { Text("Error") },
-            text = { Text("Hubo un error al buscar el TAG. Inténtalo de nuevo.") },
+            text = { Text("Hubo un error al buscar el TAG.\n$error") },
             confirmButton = {
                 TextButton(onClick = { viewModel.closeErrorDialog() }) {
                     Text("Cerrar")
@@ -107,7 +121,7 @@ fun ScanScreen(navController: NavController) {
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.closeConfirmDialog()
-                    navController.navigate(AnimalFormNav(0, rfidText.value))
+                    navController.navigate(AnimalFormNav(animalId, rfidText.value))
                 }) {
                     Text("Agregar")
                 }

@@ -23,8 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,22 +39,37 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.domain.model.Lot
+import com.ganecamp.model.objects.Lot
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.utilities.enums.FirestoreRespond
 
 @Composable
 fun LotScreen(navController: NavController) {
     val viewModel: LotViewModel = hiltViewModel()
-    val lots by viewModel.lots.observeAsState(initial = emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(initial = true)
+    val lots by viewModel.lots.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState(initial = true)
+    val error by viewModel.error.collectAsState()
 
-    LaunchedEffect(navController.currentBackStackEntry) {
+    LaunchedEffect(Unit) {
         viewModel.loadLots()
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
+        showError = false
     }
 
     Box(
@@ -67,7 +85,7 @@ fun LotScreen(navController: NavController) {
         }
 
         FloatingActionButton(
-            onClick = { navController.navigate(LotFormNav(0)) },
+            onClick = { navController.navigate(LotFormNav(null)) },
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.BottomEnd)
@@ -109,7 +127,7 @@ fun LotList(navController: NavController, lots: List<Lot>) {
 @Composable
 fun LotCard(navController: NavController, lot: Lot) {
     Card(
-        onClick = { navController.navigate(LotDetailNav(lot.id)) },
+        onClick = { navController.navigate(LotDetailNav(lot.id!!)) },
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxSize()
@@ -130,7 +148,7 @@ fun LotCard(navController: NavController, lot: Lot) {
                     style = Typography.titleMedium,
                 )
                 Text(
-                    text = stringResource(id = R.string.animals) + ": ${lot.animalCount}",
+                    text = stringResource(id = R.string.animals) + ": ${lot.numberAnimals}",
                     style = Typography.bodyMedium,
                 )
             }

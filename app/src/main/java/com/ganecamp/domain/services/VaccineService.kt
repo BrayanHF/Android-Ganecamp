@@ -1,34 +1,21 @@
 package com.ganecamp.domain.services
 
-import com.ganecamp.data.database.dao.VaccineDao
-import com.ganecamp.data.database.entities.toEntity
-import com.ganecamp.domain.model.Description
-import com.ganecamp.domain.model.Vaccine
-import com.ganecamp.domain.model.toDomain
+import com.ganecamp.data.firibase.dao.VaccineDao
+import com.ganecamp.model.objects.Vaccine
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class VaccineService @Inject constructor(private val vaccineDao: VaccineDao) {
 
-    suspend fun getAllVaccines(): List<Vaccine> {
-        return vaccineDao.getAllVaccines().map { vaccineEntity ->
-            vaccineEntity.toDomain()
-        }
-    }
+    suspend fun getAllVaccines() = vaccineDao.getAllVaccines()
 
-    suspend fun getVaccineById(id: Int): Vaccine = vaccineDao.getVaccineById(id).toDomain()
+    suspend fun getVaccineById(id: String) = vaccineDao.getVaccineById(id)
 
-    suspend fun insertVaccine(vaccine: Vaccine) = vaccineDao.insertVaccine(vaccine.toEntity())
+    suspend fun createVaccine(vaccine: Vaccine) = vaccineDao.createVaccine(vaccine)
 
-    suspend fun updateVaccine(vaccine: Vaccine) = vaccineDao.updateVaccine(vaccine.toEntity())
+    suspend fun updateVaccine(vaccine: Vaccine) = vaccineDao.updateVaccine(vaccine)
 
-    suspend fun deleteVaccineById(id: Int) = vaccineDao.deleteVaccineById(id)
-
-    suspend fun deleteAllVaccines() = vaccineDao.deleteAllVaccines()
-
-    suspend fun animalVaccines(animalId: Int): List<Description> {
-        return vaccineDao.animalVaccines(animalId).map { vaccineData ->
-            vaccineData.toDomain()
-        }
-    }
+    suspend fun deleteVaccineById(id: String) = vaccineDao.deleteVaccineById(id)
 
 }

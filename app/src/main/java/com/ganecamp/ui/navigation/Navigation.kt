@@ -13,6 +13,9 @@ import androidx.navigation.toRoute
 import com.ganecamp.ui.animal.AnimalDetailScreen
 import com.ganecamp.ui.animal.AnimalFormScreen
 import com.ganecamp.ui.animal.AnimalScreen
+import com.ganecamp.ui.auth.LoginScreen
+import com.ganecamp.ui.auth.RegisterScreen
+import com.ganecamp.ui.auth.SplashScreen
 import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotFormScreen
 import com.ganecamp.ui.lot.LotScreen
@@ -31,9 +34,12 @@ fun Navigation() {
     }) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AnimalsNav,
+            startDestination = SplashNav,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable<SplashNav> { SplashScreen(navController) }
+            composable<LoginNav> { LoginScreen(navController) }
+            composable<RegisterNav> { RegisterScreen(navController) }
             composable<AnimalsNav> { AnimalScreen(navController) }
             composable<LotsNav> { LotScreen(navController) }
             composable<ScanNav> { ScanScreen(navController) }

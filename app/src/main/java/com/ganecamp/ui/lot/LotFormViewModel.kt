@@ -2,13 +2,14 @@ package com.ganecamp.ui.lot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.domain.model.LotDetail
 import com.ganecamp.domain.services.LotService
+import com.ganecamp.model.objects.Lot
+import com.ganecamp.utilities.enums.FirestoreRespond
+import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,16 +21,26 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
     private val _lotSaved = MutableStateFlow(false)
     val lotSaved: StateFlow<Boolean> = _lotSaved
 
-    fun loadLot(lotId: Int) {
+    private val _error = MutableStateFlow(FirestoreRespond.OK)
+    val error: StateFlow<FirestoreRespond> = _error
+
+    fun loadLot(lotId: String) {
         viewModelScope.launch {
-            val lot = lotService.getLotById(lotId)
-            _uiState.value = LotFormState(
-                id = lot.id,
-                purchaseValue = lot.purchaseValue.toString(),
-                purchaseDate = lot.purchaseDate,
-                saleValue = lot.saleValue.toString(),
-                saleDate = lot.saleDate
-            )
+            val lotRespond = lotService.getLotById(lotId)
+            if (lotRespond.second == FirestoreRespond.OK) {
+                lotRespond.first?.let { lot ->
+                    _uiState.value = LotFormState(
+                        id = lot.id,
+                        purchaseValue = lot.purchaseValue.toString(),
+                        purchaseDate = lot.purchaseDate,
+                        saleValue = lot.saleValue.toString(),
+                        saleDate = lot.saleDate,
+                        sold = lot.sold
+                    )
+                }
+            } else {
+                _error.value = lotRespond.second
+            }
         }
     }
 
@@ -37,7 +48,7 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
         _uiState.value = _uiState.value.copy(purchaseValue = purchaseValue)
     }
 
-    fun onPurchaseDateChange(purchaseDate: ZonedDateTime) {
+    fun onPurchaseDateChange(purchaseDate: Timestamp) {
         _uiState.value = _uiState.value.copy(purchaseDate = purchaseDate)
     }
 
@@ -45,7 +56,7 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
         _uiState.value = _uiState.value.copy(saleValue = saleValue)
     }
 
-    fun onSaleDateChange(saleDate: ZonedDateTime) {
+    fun onSaleDateChange(saleDate: Timestamp) {
         _uiState.value = _uiState.value.copy(saleDate = saleDate)
     }
 
@@ -65,28 +76,43 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
                 0.0
             }
 
-            val lot = LotDetail(
+            val lot = Lot(
                 id = currentState.id,
+                name = currentState.name,
                 purchaseValue = purchaseValue,
                 purchaseDate = currentState.purchaseDate,
                 saleValue = saleValue,
-                saleDate = currentState.saleDate
+                saleDate = currentState.saleDate,
+                sold = false
             )
 
-            if (lot.id == 0) {
-                lotService.insertLot(lot)
+            if (lot.id == null) {
+                val createdRespond = lotService.createLot(lot)
+                if (createdRespond != FirestoreRespond.OK) {
+                    _error.value = createdRespond
+                } else {
+                    _lotSaved.value = true
+                }
             } else {
-                lotService.updateLot(lot)
+                val updateRespond = lotService.updateLot(lot)
+                if (updateRespond != FirestoreRespond.OK) {
+                    _error.value = updateRespond
+                } else {
+                    _lotSaved.value = true
+                }
             }
-            _lotSaved.value = true
+
         }
     }
+
 }
 
 data class LotFormState(
-    val id: Int = 0,
+    val id: String? = null,
+    val name: String = "",
     val purchaseValue: String = "",
-    val purchaseDate: ZonedDateTime = ZonedDateTime.now(),
+    val purchaseDate: Timestamp = Timestamp.now(),
     val saleValue: String = "",
-    val saleDate: ZonedDateTime = ZonedDateTime.now()
+    val saleDate: Timestamp = Timestamp.now(),
+    val sold: Boolean = false
 )

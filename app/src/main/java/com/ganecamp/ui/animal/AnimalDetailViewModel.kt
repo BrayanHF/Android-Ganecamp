@@ -1,106 +1,123 @@
 package com.ganecamp.ui.animal
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.domain.model.AnimalDetail
-import com.ganecamp.domain.model.Description
-import com.ganecamp.domain.model.Weight
 import com.ganecamp.domain.services.AnimalService
-import com.ganecamp.domain.services.EventService
-import com.ganecamp.domain.services.VaccineService
+import com.ganecamp.domain.services.EventAppliedService
+import com.ganecamp.domain.services.VaccineAppliedService
 import com.ganecamp.domain.services.WeightService
+import com.ganecamp.model.objects.Animal
+import com.ganecamp.model.objects.EventApplied
+import com.ganecamp.model.objects.VaccineApplied
+import com.ganecamp.model.objects.Weight
+import com.ganecamp.model.objects.WeightValue
+import com.ganecamp.utilities.enums.EntityType
+import com.ganecamp.utilities.enums.FirestoreRespond
+import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class AnimalDetailViewModel @Inject constructor(
     private val animalService: AnimalService,
-    private val eventService: EventService,
-    private val vaccineService: VaccineService,
     private val weightService: WeightService,
-    savedStateHandle: SavedStateHandle
+    private val vaccineAppliedService: VaccineAppliedService,
+    private val eventAppliedService: EventAppliedService,
 ) : ViewModel() {
 
-    private val animalId: Int = savedStateHandle["animalId"] ?: 0
+    private val _animal = MutableStateFlow<Animal?>(null)
+    val animal: StateFlow<Animal?> = _animal
 
-    private val _animal = MutableLiveData<AnimalDetail>()
-    val animal: LiveData<AnimalDetail> = _animal
+    private val _vaccines = MutableStateFlow<List<VaccineApplied>>(emptyList())
+    val vaccines: StateFlow<List<VaccineApplied>> = _vaccines
 
-    private val _lotId = MutableLiveData<Int>()
-    val lotId: LiveData<Int> = _lotId
+    private val _weights = MutableStateFlow<List<Weight>>(emptyList())
+    val weights: StateFlow<List<Weight>> = _weights
 
-    private val _vaccines = MutableLiveData<List<Description>>()
-    val vaccines: LiveData<List<Description>> = _vaccines
+    private val _events = MutableStateFlow<List<EventApplied>>(emptyList())
+    val events: StateFlow<List<EventApplied>> = _events
 
-    private val _weights = MutableLiveData<List<Weight>>()
-    val weights: LiveData<List<Weight>> = _weights
+    private val _ageAnimal = MutableStateFlow<Triple<Int, Int, Int>?>(null)
+    val ageAnimal: StateFlow<Triple<Int, Int, Int>?> = _ageAnimal
 
-    private val _events = MutableLiveData<List<Description>>()
-    val events: LiveData<List<Description>> = _events
+    private val _weightValue = MutableStateFlow<WeightValue?>(null)
+    val weightValue: StateFlow<WeightValue?> = _weightValue
 
-    private val _ageAnimal = MutableLiveData<Triple<Int, Int, Int>>()
-    val ageAnimal: LiveData<Triple<Int, Int, Int>> get() = _ageAnimal
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _weightValue = MutableLiveData<Float>()
-    val weightValue: LiveData<Float> = _weightValue
+    private val _error = MutableStateFlow(FirestoreRespond.OK)
+    val error: StateFlow<FirestoreRespond> = _error
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
-    fun loadWeights() {
+    fun loadWeights(animalId: String) {
         viewModelScope.launch {
-            val weights = weightService.animalWeights(animalId)
-            _weights.value = weights
+            val weightRespond = weightService.getAnimalWeights(animalId)
+            if (weightRespond.second == FirestoreRespond.OK) {
+                _weights.value = weightRespond.first
+            } else {
+                _error.value = weightRespond.second
+            }
         }
     }
 
-    fun loadEvents() {
+    fun loadEvents(animalId: String) {
         viewModelScope.launch {
-            val events = eventService.animalEvents(animalId)
-            _events.value = events
+            val eventRespond = eventAppliedService.getEntityEvents(animalId, EntityType.Animal)
+            if (eventRespond.second == FirestoreRespond.OK) {
+                _events.value = eventRespond.first
+            } else {
+                _error.value = eventRespond.second
+            }
         }
     }
 
-    fun loadVaccines() {
+    fun loadVaccines(animalId: String) {
         viewModelScope.launch {
-            val vaccines = vaccineService.animalVaccines(animalId)
-            _vaccines.value = vaccines
+            val vaccinesRespond = vaccineAppliedService.getVaccinesApplied(animalId)
+            if (vaccinesRespond.second == FirestoreRespond.OK) {
+                _vaccines.value = vaccinesRespond.first
+            } else {
+                _error.value = vaccinesRespond.second
+            }
         }
     }
 
-    fun loadLotId() {
+    fun loadAnimal(animalId: String) {
         viewModelScope.launch {
-            val lotId = animalService.getLotById(animalId)
-            _lotId.value = lotId
-        }
-    }
-
-    fun loadAnimal() {
-        viewModelScope.launch {
-            val animal = animalService.getAnimalById(animalId)
-            _animal.value = animal
-            calculateAge(animal.birthDate)
+            val animalRespond = animalService.getAnimalById(animalId)
+            if (animalRespond.second == FirestoreRespond.OK) {
+                _animal.value = animalRespond.first
+                animalRespond.first?.let {
+                    calculateAge(it.birthDate)
+                }
+            } else {
+                _error.value = animalRespond.second
+            }
             _isLoading.value = false
         }
     }
 
-    fun loadWeightValue() {
-        // Todo: Implement this function where the weight value is in an external service
-        //  and in the offline case it has a local value
-    }
-
-    private fun calculateAge(birthDate: ZonedDateTime) {
+    private fun calculateAge(birthDate: Timestamp) {
         _ageAnimal.value = animalService.calculateAge(birthDate)
     }
 
-    fun deleteAnimal(animalId: Int) {
+    fun deleteAnimal(tag: String) {
         viewModelScope.launch {
-            animalService.deleteAnimalById(animalId)
+            animalService.deleteAnimalByTag(tag)
+        }
+    }
+
+    fun loadWeightValue() {
+        viewModelScope.launch {
+            val weightRespond = weightService.loadWeightValue()
+            if (weightRespond.second == FirestoreRespond.OK) {
+                _weightValue.value = weightRespond.first
+            } else {
+                _error.value = weightRespond.second
+            }
         }
     }
 

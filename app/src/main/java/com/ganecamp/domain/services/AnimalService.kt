@@ -1,39 +1,33 @@
 package com.ganecamp.domain.services
 
-import com.ganecamp.data.database.dao.AnimalDao
-import com.ganecamp.data.database.dao.AnimalLotDao
-import com.ganecamp.data.database.entities.toEntity
-import com.ganecamp.domain.model.Animal
-import com.ganecamp.domain.model.AnimalDetail
-import com.ganecamp.domain.model.toDomain
+import com.ganecamp.data.firibase.dao.AnimalDao
+import com.ganecamp.model.objects.Animal
+import com.google.firebase.Timestamp
 import java.time.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AnimalService @Inject constructor(
-    private val animalDao: AnimalDao, private val animalLotDao: AnimalLotDao
+    private val animalDao: AnimalDao
 ) {
 
-    suspend fun getAllAnimals(): List<Animal> {
-        return animalDao.getAllAnimals().map { simpleAnimalData ->
-            simpleAnimalData.toDomain()
-        }
-    }
+    suspend fun getAllAnimals() = animalDao.getAllAnimals()
 
-    suspend fun getAnimalByTag(tag: String): AnimalDetail = animalDao.getAnimalByTag(tag).toDomain()
+    suspend fun getAnimalById(id: String) = animalDao.getAnimalById(id)
 
-    suspend fun getIdByTag(tag: String): Int = animalDao.getIdByTag(tag)
+    suspend fun getAnimalByTag(tag: String) = animalDao.getAnimalByTag(tag)
 
-    suspend fun insertAnimal(animal: AnimalDetail) = animalDao.insertAnimal(animal.toEntity())
+    suspend fun createAnimal(animal: Animal) = animalDao.createAnimal(animal)
 
-    suspend fun updateAnimal(animal: AnimalDetail) = animalDao.updateAnimal(animal.toEntity())
+    suspend fun updateAnimal(animal: Animal) = animalDao.updateAnimal(animal)
 
-    suspend fun deleteAnimal(tag: String) = animalDao.deleteAnimalByTag(tag)
+    suspend fun deleteAnimalByTag(tag: String) = animalDao.deleteAnimalByTag(tag)
 
-    suspend fun deleteAllAnimals() = animalDao.deleteAllAnimals()
-
-    fun calculateAge(birthDate: ZonedDateTime): Triple<Int, Int, Int> {
+    fun calculateAge(birthTimestamp: Timestamp): Triple<Int, Int, Int> {
+        val birthDate = birthTimestamp.toDate().toInstant().atZone(ZonedDateTime.now().zone)
         val today = ZonedDateTime.now()
         val birthInZone = birthDate.withZoneSameInstant(today.zone)
 
@@ -42,20 +36,5 @@ class AnimalService @Inject constructor(
 
         return Triple(period.years, period.months, days - period.years * 365 - period.months * 30)
     }
-
-    suspend fun getAnimalById(animalId: Int): AnimalDetail =
-        animalDao.getAnimalById(animalId).toDomain()
-
-    suspend fun addLotToAnimal(animalId: Int, lotId: Int) =
-        animalLotDao.addLotToAnimal(animalId, lotId)
-
-    suspend fun changeLotToAnimal(animalId: Int, lotId: Int) =
-        animalLotDao.changeLotToAnimal(animalId, lotId)
-
-    suspend fun removeFromLot(animalId: Int) = animalLotDao.removeFromLot(animalId)
-
-    suspend fun getLotById(animalId: Int) = animalDao.getLotById(animalId)
-
-    suspend fun deleteAnimalById(animalId: Int) = animalDao.deleteAnimalById(animalId)
 
 }

@@ -1,24 +1,23 @@
 package com.ganecamp.ui.animal
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.domain.model.AnimalDetail
-import com.ganecamp.domain.model.GeneralEvent
-import com.ganecamp.domain.model.Weight
 import com.ganecamp.domain.services.AnimalService
 import com.ganecamp.domain.services.EventService
 import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.services.WeightService
+import com.ganecamp.model.objects.Animal
+import com.ganecamp.model.objects.Lot
+import com.ganecamp.model.objects.Weight
 import com.ganecamp.ui.general.formatNumber
+import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
+import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,32 +31,47 @@ class AnimalFormViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AnimalFormState())
     val uiState: StateFlow<AnimalFormState> = _uiState
 
-    private val _lots = MutableLiveData<List<Int>>()
-    val lots: LiveData<List<Int>> = _lots
+    private val _lots = MutableStateFlow<List<Lot>>(emptyList())
+    val lots: StateFlow<List<Lot>> = _lots
 
     private val _animalSaved = MutableStateFlow(false)
     val animalSaved: StateFlow<Boolean> = _animalSaved
 
-    fun loadAnimal(animalId: Int) {
+    private val _error = MutableStateFlow(FirestoreRespond.OK)
+    val error: StateFlow<FirestoreRespond> = _error
+
+
+    fun loadAnimal(animalId: String) {
         viewModelScope.launch {
-            val animal = animalService.getAnimalById(animalId)
-            _uiState.value = AnimalFormState(
-                id = animal.id,
-                tag = animal.tag,
-                gender = animal.gender,
-                birthDate = animal.birthDate,
-                purchaseValue = formatNumber(animal.purchaseValue.toString()),
-                saleValue = formatNumber(animal.saleValue.toString()),
-                state = animal.state,
-                lotId = animalService.getLotById(animalId),
-                weight = 0f.toString()
-            )
+            val animalResponse = animalService.getAnimalById(animalId)
+            if (animalResponse.second != FirestoreRespond.OK) {
+                animalResponse.first?.let { animal ->
+                    _uiState.value = AnimalFormState(
+                        id = animal.id,
+                        tag = animal.tag,
+                        gender = animal.gender,
+                        birthDate = animal.birthDate,
+                        purchaseValue = formatNumber(animal.purchaseValue.toString()),
+                        saleValue = formatNumber(animal.saleValue.toString()),
+                        state = animal.state,
+                        lotId = animal.lotId,
+                        weight = 0f.toString()
+                    )
+                }
+            } else {
+                _error.value = animalResponse.second
+            }
         }
     }
 
     fun loadLots() {
         viewModelScope.launch {
-            _lots.value = lotService.getAllLotsIDs()
+            val lotResponse = lotService.getAllLots()
+            if (lotResponse.second != FirestoreRespond.OK) {
+                _lots.value = lotResponse.first
+            } else {
+                _error.value = lotResponse.second
+            }
         }
     }
 
@@ -69,7 +83,7 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(gender = gender)
     }
 
-    fun onBirthDateChange(birthDate: ZonedDateTime) {
+    fun onBirthDateChange(birthDate: Timestamp) {
         _uiState.value = _uiState.value.copy(birthDate = birthDate)
     }
 
@@ -89,7 +103,7 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weight = weight)
     }
 
-    fun onLotChange(lotId: Int) {
+    fun onLotChange(lotId: String?) {
         _uiState.value = _uiState.value.copy(lotId = lotId)
     }
 
@@ -115,49 +129,58 @@ class AnimalFormViewModel @Inject constructor(
                 0.0
             }
 
-            val animal = AnimalDetail(
+            val animal = Animal(
                 id = currentState.id,
                 tag = currentState.tag,
                 gender = currentState.gender,
                 birthDate = currentState.birthDate,
+                lotId = currentState.lotId,
                 purchaseValue = purchaseValue,
+                purchaseDate = Timestamp.now(),
                 saleValue = saleValue,
+                saleDate = Timestamp.now(),
                 state = currentState.state
             )
 
-            if (animal.id == 0) {
-                animalService.insertAnimal(animal)
-                val newId = animalService.getIdByTag(animal.tag)
-                if (currentState.lotId != 0) animalService.addLotToAnimal(newId, currentState.lotId)
-                weightService.insertWeight(Weight(0, newId, weight, ZonedDateTime.now()))
-                eventService.addEventToAnimal(GeneralEvent(0, newId, 1, ZonedDateTime.now()))
-                _uiState.value = _uiState.value.copy(id = newId)
-            } else {
-                val lotId = animalService.getLotById(currentState.id)
-                animalService.updateAnimal(animal)
-                if (currentState.lotId == 0) {
-                    animalService.removeFromLot(currentState.id)
-                } else {
-                    if (currentState.lotId != lotId && lotId != 0) {
-                        animalService.changeLotToAnimal(currentState.id, currentState.lotId)
+            if (animal.id == null) {
+                val createdRespond = animalService.createAnimal(animal)
+                if (createdRespond == FirestoreRespond.OK) {
+                    val newAnimalRespond = animalService.getAnimalByTag(currentState.tag)
+                    if (newAnimalRespond.second == FirestoreRespond.OK) {
+                        newAnimalRespond.first?.let { newAnimal ->
+                            weightService.createWeight(
+                                newAnimal.id!!, Weight(weight = weight, date = Timestamp.now())
+                            )
+                            _uiState.value = _uiState.value.copy(id = newAnimal.id!!)
+                            _animalSaved.value = true
+                        }
                     } else {
-                        animalService.addLotToAnimal(currentState.id, currentState.lotId)
+                        _error.value = newAnimalRespond.second
                     }
+                } else {
+                    _error.value = createdRespond
+                }
+            } else {
+                val updateRespond = animalService.updateAnimal(animal)
+                if (updateRespond == FirestoreRespond.OK) {
+                    _animalSaved.value = true
+                } else {
+                    _error.value = updateRespond
                 }
             }
-            _animalSaved.value = true
         }
     }
+
 }
 
 data class AnimalFormState(
-    val id: Int = 0,
+    val id: String? = null,
     val tag: String = "",
     val gender: Gender = Gender.Male,
-    val birthDate: ZonedDateTime = ZonedDateTime.now(),
+    val birthDate: Timestamp = Timestamp.now(),
     val purchaseValue: String = "",
     val saleValue: String = "",
     val state: State = State.Healthy,
-    val lotId: Int = 0,
+    val lotId: String? = null,
     val weight: String = ""
 )

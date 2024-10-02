@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -20,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
@@ -40,10 +42,10 @@ import androidx.compose.ui.unit.dp
 import com.ganecamp.R
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import com.ganecamp.utilities.enums.FirestoreRespond
+import com.google.firebase.Timestamp
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @Composable
 fun IsLoading() {
@@ -57,7 +59,9 @@ fun IsLoading() {
 @Composable
 fun NoRegistered(textId: Int) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
     ) {
         Text(
             text = stringResource(id = textId), style = Typography.bodyMedium
@@ -93,7 +97,7 @@ fun TopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    selectedDate: ZonedDateTime, onDateChange: (ZonedDateTime) -> Unit, label: Int
+    selectedDate: Timestamp, onDateChange: (Timestamp) -> Unit, label: Int
 ) {
     val datePickerState = rememberDatePickerState()
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -101,7 +105,7 @@ fun DatePickerField(
 
     var showDate by remember { mutableStateOf(false) }
 
-    val formattedDate = selectedDate.format(formatter)
+    val formattedDate = selectedDate.toDate().toString().format(formatter)
 
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -136,10 +140,10 @@ fun DatePickerField(
                     Button(onClick = {
                         showDate = false
                         val date = datePickerState.selectedDateMillis
-                        val dateZDT = date?.let {
-                            Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC"))
+                        val timestamp = date?.let {
+                            Timestamp(Date(it))
                         }
-                        if (dateZDT != null) onDateChange(dateZDT)
+                        if (timestamp != null) onDateChange(timestamp)
                         focusManager.clearFocus()
                     }) {
                         Text(stringResource(id = R.string.confirm))
@@ -188,4 +192,17 @@ fun NumberTextField(
             )
         }
     }
+}
+
+@Composable
+fun ShowFirestoreError(error: FirestoreRespond, onDismiss: () -> Unit) {
+    AlertDialog(containerColor = MaterialTheme.colorScheme.background,
+        onDismissRequest = { onDismiss() },
+        title = { Text("Error") },
+        text = { Text(error.toString()) },
+        confirmButton = {
+            TextButton(onClick = { }) {
+                Text("Cerrar")
+            }
+        })
 }

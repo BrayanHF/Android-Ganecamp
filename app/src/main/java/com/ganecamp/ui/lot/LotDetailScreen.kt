@@ -24,8 +24,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,32 +39,54 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.domain.model.Animal
-import com.ganecamp.domain.model.Description
-import com.ganecamp.domain.model.LotDetail
+import com.ganecamp.model.objects.Animal
+import com.ganecamp.model.objects.EventApplied
+import com.ganecamp.model.objects.Lot
 import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
-import java.time.ZonedDateTime
+import com.ganecamp.utilities.enums.FirestoreRespond
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun LotDetailScreen(navController: NavController, lotId: Int) {
+fun LotDetailScreen(navController: NavController, lotId: String?) {
     val viewModel: LotDetailViewModel = hiltViewModel()
-    val isLoading by viewModel.isLoading.observeAsState(initial = true)
-    val lotDetail by viewModel.lot.observeAsState(
-        initial = LotDetail(
-            lotId, 0.0, ZonedDateTime.now(), 0.0, ZonedDateTime.now()
-        )
-    )
-    val events: List<Description> by viewModel.events.observeAsState(initial = emptyList())
-    val animals: List<Animal> by viewModel.animals.observeAsState(initial = emptyList())
+    val isLoading by viewModel.isLoading.collectAsState(initial = true)
+    val lot by viewModel.lot.collectAsState()
+    val events: List<EventApplied> by viewModel.events.collectAsState()
+    val animals: List<Animal> by viewModel.animals.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(lotId) {
+        if (lotId != null) {
+            viewModel.loadLot(lotId)
+            viewModel.loadEvents(lotId)
+            viewModel.loadAnimals(lotId)
+        } else {
+            navController.popBackStack()
+        }
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
+    }
+
 
     Box(
-        modifier = Modifier.fillMaxSize().padding(8.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
             .background(MaterialTheme.colorScheme.background)
     ) {
         if (isLoading) {
@@ -71,7 +97,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                LotInfo(lotDetail)
+                LotInfo(lot!!)
                 if (events.isNotEmpty()) {
                     LotEvents(events)
                 }
@@ -88,7 +114,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
             ) {
                 FloatingActionButton(
                     onClick = {
-                        viewModel.deleteLot(lotId)
+                        viewModel.deleteLot(lotId!!)
                         navController.popBackStack()
                     },
                     modifier = Modifier
@@ -125,7 +151,7 @@ fun LotDetailScreen(navController: NavController, lotId: Int) {
 }
 
 @Composable
-fun LotInfo(lotDetail: LotDetail) {
+fun LotInfo(lotDetail: Lot) {
     Column(
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -162,7 +188,8 @@ fun LotInfo(lotDetail: LotDetail) {
                     style = Typography.bodyMedium
                 )
                 Text(
-                    text = lotDetail.purchaseDate.format(formatter), style = Typography.bodyMedium
+                    text = lotDetail.purchaseDate.toString().format(formatter),
+                    style = Typography.bodyMedium
                 )
             }
         }
@@ -191,7 +218,8 @@ fun LotInfo(lotDetail: LotDetail) {
                     text = stringResource(id = R.string.sale_date), style = Typography.bodyMedium
                 )
                 Text(
-                    text = lotDetail.saleDate.format(formatter), style = Typography.bodyMedium
+                    text = lotDetail.saleDate.toString().format(formatter),
+                    style = Typography.bodyMedium
                 )
             }
         }
@@ -199,7 +227,7 @@ fun LotInfo(lotDetail: LotDetail) {
 }
 
 @Composable
-fun LotEvents(events: List<Description>) {
+fun LotEvents(events: List<EventApplied>) {
     Text(
         text = "Events",
         style = Typography.bodyMedium,
@@ -207,7 +235,7 @@ fun LotEvents(events: List<Description>) {
     )
     LazyColumn {
         items(events.size) {
-            GeneralDescriptionCard(description = events[it])
+            EventsLazyRow(event = events[it])
         }
     }
 }
@@ -247,9 +275,9 @@ fun AnimalRow(animal: Animal) {
 }
 
 @Composable
-fun GeneralDescriptionCard(description: Description) {
+fun EventsLazyRow(event: EventApplied) {
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val formattedDate = description.date.format(formatter)
+    val formattedDate = event.date.toString().format(formatter)
 
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -260,11 +288,11 @@ fun GeneralDescriptionCard(description: Description) {
             .width(300.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = description.title, style = Typography.titleSmall)
+            Text(text = event.title, style = Typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = formattedDate, style = Typography.titleSmall, color = Color.Gray)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = description.description, style = Typography.titleSmall)
+            Text(text = event.description, style = Typography.titleSmall)
         }
     }
 }

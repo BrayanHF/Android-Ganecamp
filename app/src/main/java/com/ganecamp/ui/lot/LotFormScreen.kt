@@ -13,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,19 +25,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.ui.general.DatePickerField
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.navigation.LotsNav
-import java.time.ZonedDateTime
+import com.ganecamp.utilities.enums.FirestoreRespond
+import com.google.firebase.Timestamp
 
 @Composable
-fun LotFormScreen(navController: NavController, lotId: Int = 0) {
+fun LotFormScreen(navController: NavController, lotId: String?) {
     val viewModel: LotFormViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
     val lotSaved by viewModel.lotSaved.collectAsState()
-
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(lotId) {
-        if (lotId != 0) {
+        if (lotId != null) {
             viewModel.loadLot(lotId)
         }
     }
@@ -46,6 +51,17 @@ fun LotFormScreen(navController: NavController, lotId: Int = 0) {
                 launchSingleTop = true
             }
         }
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
     }
 
     AnimalFormContent(state = state,
@@ -62,9 +78,9 @@ fun LotFormScreen(navController: NavController, lotId: Int = 0) {
 fun AnimalFormContent(
     state: LotFormState,
     onPurchaseValueChange: (String) -> Unit,
-    onPurchaseDateChange: (ZonedDateTime) -> Unit,
+    onPurchaseDateChange: (Timestamp) -> Unit,
     onSaleValueChange: (String) -> Unit,
-    onSaleDateChange: (ZonedDateTime) -> Unit,
+    onSaleDateChange: (Timestamp) -> Unit,
     onSaveClick: () -> Unit
 ) {
     Column(

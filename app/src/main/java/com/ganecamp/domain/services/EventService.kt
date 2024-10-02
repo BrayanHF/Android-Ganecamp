@@ -1,48 +1,21 @@
 package com.ganecamp.domain.services
 
-import com.ganecamp.data.database.dao.EventDao
-import com.ganecamp.data.database.entities.toAnimalEntity
-import com.ganecamp.data.database.entities.toEntity
-import com.ganecamp.data.database.entities.toLotEntity
-import com.ganecamp.domain.model.Description
-import com.ganecamp.domain.model.Event
-import com.ganecamp.domain.model.GeneralEvent
-import com.ganecamp.domain.model.toDomain
+import com.ganecamp.data.firibase.dao.EventDao
+import com.ganecamp.model.objects.Event
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class EventService @Inject constructor(private val eventDao: EventDao) {
 
-    suspend fun getAllEvents(): List<Event> {
-        return eventDao.getAllEvents().map { eventEntity ->
-            eventEntity.toDomain()
-        }
-    }
+    suspend fun getAllEvents() = eventDao.getAllEvents()
 
-    suspend fun getEventById(id: Int): Event = eventDao.getEventById(id).toDomain()
+    suspend fun getEventById(id: String) = eventDao.getEventById(id)
 
-    suspend fun insertEvent(event: Event) = eventDao.insertEvent(event.toEntity())
+    suspend fun createEvent(event: Event) = eventDao.createEvent(event)
 
-    suspend fun updateEvent(event: Event) = eventDao.updateEvent(event.toEntity())
+    suspend fun updateEvent(event: Event) = eventDao.updateEvent(event)
 
-    suspend fun deleteEventById(id: Int) = eventDao.deleteEventById(id)
-
-    suspend fun deleteAllEvents() = eventDao.deleteAllEvents()
-
-    suspend fun animalEvents(animalId: Int): List<Description> {
-        return eventDao.animalEvents(animalId).map { descriptionData ->
-            descriptionData.toDomain()
-        }
-    }
-
-    suspend fun lotEvents(lotId: Int): List<Description> {
-        return eventDao.lotEvents(lotId).map { descriptionData ->
-            descriptionData.toDomain()
-        }
-    }
-
-    suspend fun addEventToAnimal(event: GeneralEvent) =
-        eventDao.addEventToAnimal(event.toAnimalEntity())
-
-    suspend fun addEventToLot(event: GeneralEvent) = eventDao.addEventToLot(event.toLotEntity())
+    suspend fun deleteEventById(id: String) = eventDao.deleteEventById(id)
 
 }

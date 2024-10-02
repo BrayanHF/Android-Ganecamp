@@ -24,8 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -36,21 +39,35 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.domain.model.Animal
+import com.ganecamp.model.objects.Animal
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.navigation.AnimalDetailNav
+import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 
 @Composable
 fun AnimalScreen(navController: NavHostController) {
     val viewModel: AnimalsViewModel = hiltViewModel()
-    val animals by viewModel.animals.observeAsState(emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(true)
+    val animals by viewModel.animals.collectAsState(emptyList())
+    val isLoading by viewModel.isLoading.collectAsState(true)
+    val error by viewModel.error.collectAsState(FirestoreRespond.OK)
 
-    LaunchedEffect(navController.currentBackStackEntry) {
+    LaunchedEffect(Unit) {
         viewModel.loadAnimals()
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
     }
 
     Box(
@@ -97,7 +114,7 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        onClick = { navController.navigate(AnimalDetailNav(animal.id)) },
+        onClick = { navController.navigate(AnimalDetailNav(animal.id!!)) },
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
@@ -116,7 +133,7 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "ID: ${animal.id}", style = MaterialTheme.typography.titleSmall)
-                if (animal.lotId != 0) {
+                if (animal.lotId != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(id = R.string.lot) + " ${animal.lotId}",

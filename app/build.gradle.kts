@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinxSerialization)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -79,21 +80,24 @@ dependencies {
     // Others jetpack compose dependencies
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material)
-    implementation(libs.androidx.constraintlayout.compose)
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
 
     // Dagger hilt
     implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
-    implementation (libs.androidx.hilt.navigation.compose)
 
-    implementation(libs.androidx.runtime.livedata)
-
-    // Serialization
+    // Serialization for navigation
     implementation(libs.kotlinx.serialization.json)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
+    implementation(libs.google.firebase.auth)
+    implementation(libs.play.services.auth)
+
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
 
 }

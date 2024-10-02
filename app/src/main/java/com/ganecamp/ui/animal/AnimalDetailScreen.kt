@@ -28,8 +28,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,10 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.domain.model.AnimalDetail
-import com.ganecamp.domain.model.Description
-import com.ganecamp.domain.model.Weight
+import com.ganecamp.model.objects.Animal
+import com.ganecamp.model.objects.EventApplied
+import com.ganecamp.model.objects.VaccineApplied
+import com.ganecamp.model.objects.Weight
 import com.ganecamp.ui.general.IsLoading
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.formatNumber
 import com.ganecamp.ui.navigation.AnimalDetailNav
@@ -54,36 +59,44 @@ import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Red
+import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AnimalDetailScreen(navController: NavHostController, animalId: Int) {
+fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
-    val isLoading by viewModel.isLoading.observeAsState(initial = true)
-    val animalDetail: AnimalDetail by viewModel.animal.observeAsState(
-        initial = AnimalDetail(
-            "", animalId, Gender.Male, ZonedDateTime.now(), 0.0, 0.0, State.Healthy
-        )
-    )
-    val lotId by viewModel.lotId.observeAsState(initial = 0)
-    val vaccines: List<Description> by viewModel.vaccines.observeAsState(initial = emptyList())
-    val events: List<Description> by viewModel.events.observeAsState(initial = emptyList())
-    val weights: List<Weight> by viewModel.weights.observeAsState(initial = emptyList())
-    val age by viewModel.ageAnimal.observeAsState(initial = Triple(0, 0, 0))
-    val weightValue by viewModel.weightValue.observeAsState(initial = 4000f)
-
-
+    val isLoading by viewModel.isLoading.collectAsState(initial = true)
+    val animal: Animal? by viewModel.animal.collectAsState()
+    val vaccines: List<VaccineApplied> by viewModel.vaccines.collectAsState()
+    val events: List<EventApplied> by viewModel.events.collectAsState()
+    val weights: List<Weight> by viewModel.weights.collectAsState()
+    val age by viewModel.ageAnimal.collectAsState()
+    val weightValue by viewModel.weightValue.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(animalId) {
-        viewModel.loadAnimal()
-        viewModel.loadLotId()
-        viewModel.loadVaccines()
-        viewModel.loadEvents()
-        viewModel.loadWeights()
-        viewModel.loadWeightValue()
+        if (animalId != null) {
+            viewModel.loadAnimal(animalId)
+            viewModel.loadVaccines(animalId)
+            viewModel.loadEvents(animalId)
+            viewModel.loadWeights(animalId)
+            viewModel.loadWeightValue()
+        } else {
+            navController.popBackStack()
+        }
+    }
+
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
     }
 
     Scaffold(topBar = {
@@ -99,8 +112,15 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int) {
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding)
             ) {
+
+                val approxSold = if (weights.isNotEmpty() && weightValue != null) {
+                    weightValue!!.value * weights.first().weight
+                } else {
+                    0f
+                }
+
                 AnimalInfo(
-                    navController, animalDetail, lotId, age, weights.first().weight * weightValue
+                    navController, animal!!, age, approxSold.toString()
                 )
                 SectionWithLazyRow(titleRes = R.string.vaccines,
                     items = vaccines,
@@ -115,7 +135,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int) {
                 AnimalWeights(weights = weights, onClickAdd = { /*TODO*/ })
                 OutlinedButton(
                     onClick = {
-                        viewModel.deleteAnimal(animalId)
+                        viewModel.deleteAnimal(animal!!.tag)
                         navController.navigate(AnimalsNav) {
                             popUpTo(AnimalDetailNav) { inclusive = true }
                         }
@@ -139,10 +159,9 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: Int) {
 @Composable
 fun AnimalInfo(
     navController: NavHostController,
-    animalDetail: AnimalDetail,
-    lotId: Int,
-    age: Triple<Int, Int, Int>,
-    approxSale: Float,
+    animal: Animal,
+    age: Triple<Int, Int, Int>?,
+    approxSold: String
 ) {
     Card(
         modifier = Modifier
@@ -162,7 +181,7 @@ fun AnimalInfo(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val genderIcon: Int = if (animalDetail.gender == Gender.Male) {
+                val genderIcon: Int = if (animal.gender == Gender.Male) {
                     R.drawable.ic_bull
                 } else {
                     R.drawable.ic_cow
@@ -175,19 +194,18 @@ fun AnimalInfo(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "ID: ${animalDetail.id}", style = MaterialTheme.typography.bodyLarge
+                        text = "ID: ${animal.id}", style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "TAG: ${animalDetail.tag}",
-                        style = MaterialTheme.typography.titleSmall
+                        text = "TAG: ${animal.tag}", style = MaterialTheme.typography.titleSmall
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedButton(
                     onClick = {
                         navController.navigate(
-                            AnimalFormNav(animalDetail.id, animalDetail.tag)
+                            AnimalFormNav(animal.id!!, animal.tag)
                         )
                     },
                     shape = RoundedCornerShape(50),
@@ -202,32 +220,35 @@ fun AnimalInfo(
                 }
             }
 
-            InfoRowWithClickableLot(navController, lotId, animalDetail)
+            InfoRowWithClickableLot(navController, animal)
 
-            InfoRow(
-                titleRes = R.string.birth_date,
-                value = animalDetail.birthDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                titleRes2 = R.string.age,
-                value2 = when {
-                    age.first > 0 -> "${age.first} " + stringResource(id = R.string.years)
-                    age.second > 0 -> "${age.second} " + stringResource(id = R.string.months)
-                    else -> "${age.third} " + stringResource(id = R.string.days)
-                }
-            )
+            if (age != null) {
+                InfoRow(
+                    titleRes = R.string.birth_date,
+                    value = animal.birthDate.toString()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    titleRes2 = R.string.age,
+                    value2 = when {
+                        age.first > 0 -> "${age.first} " + stringResource(id = R.string.years)
+                        age.second > 0 -> "${age.second} " + stringResource(id = R.string.months)
+                        else -> "${age.third} " + stringResource(id = R.string.days)
+                    }
+                )
+            }
 
-            if (animalDetail.state == State.Sold) {
+            if (animal.state == State.Sold) {
                 InfoRow(
                     titleRes = R.string.purchase_value,
-                    value = "$" + formatNumber(animalDetail.purchaseValue.toString()),
+                    value = "$" + formatNumber(animal.purchaseValue.toString()),
                     titleRes2 = R.string.sale_value,
-                    value2 = "$" + formatNumber(animalDetail.saleValue.toString())
+                    value2 = "$" + formatNumber(animal.saleValue.toString())
                 )
             } else {
                 InfoRow(
                     titleRes = R.string.purchase_value,
-                    value = "$" + formatNumber(animalDetail.purchaseValue.toString()),
+                    value = "$" + formatNumber(animal.purchaseValue.toString()),
                     titleRes2 = R.string.approximate_purchase_value,
-                    value2 = "$" + formatNumber(approxSale.toString())
+                    value2 = "$" + formatNumber(approxSold)
                 )
             }
         }
@@ -236,7 +257,7 @@ fun AnimalInfo(
 
 @Composable
 fun InfoRowWithClickableLot(
-    navController: NavHostController, lotId: Int, animalDetail: AnimalDetail
+    navController: NavHostController, animal: Animal
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -246,11 +267,11 @@ fun InfoRowWithClickableLot(
         Column(modifier = Modifier
             .weight(1f)
             .background(
-                color = if (lotId != 0) Green.copy(alpha = 0.2f) else Color.Transparent,
+                color = if (animal.lotId != null) Green.copy(alpha = 0.2f) else Color.Transparent,
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable(enabled = lotId != 0) {
-                if (lotId != 0) navController.navigate(LotDetailNav(lotId))
+            .clickable(enabled = animal.lotId != null) {
+                if (animal.lotId != null) navController.navigate(LotDetailNav(animal.lotId))
             }
             .padding(top = 16.dp, bottom = 16.dp, start = 16.dp, end = 32.dp)) {
             Text(
@@ -259,8 +280,7 @@ fun InfoRowWithClickableLot(
                 color = LightGray
             )
             Text(
-                text = if (lotId == 0) "ND" else lotId.toString(),
-                style = MaterialTheme.typography.bodyMedium
+                text = animal.lotId ?: "ND", style = MaterialTheme.typography.bodyMedium
             )
         }
         Column(
@@ -275,7 +295,7 @@ fun InfoRowWithClickableLot(
             )
             Text(
                 text = stringResource(
-                    id = when (animalDetail.state) {
+                    id = when (animal.state) {
                         State.Healthy -> R.string.healthy
                         State.Sick -> R.string.sick
                         State.Injured -> R.string.injured
@@ -345,11 +365,11 @@ fun AddButton(text: Int, onClick: () -> Unit) {
 }
 
 @Composable
-fun SectionWithLazyRow(
+fun <Applied> SectionWithLazyRow(
     onClickAdd: () -> Unit,
     titleRes: Int,
-    items: List<Description>,
-    cardContent: @Composable (Description) -> Unit,
+    items: List<Applied>,
+    cardContent: @Composable (Applied) -> Unit,
     addActionTextRes: Int
 ) {
     Column {
@@ -375,7 +395,7 @@ fun SectionWithLazyRow(
 }
 
 @Composable
-fun VaccineCard(vaccine: Description) {
+fun VaccineCard(vaccine: VaccineApplied) {
     Card(
         modifier = Modifier
             .width(256.dp)
@@ -386,10 +406,10 @@ fun VaccineCard(vaccine: Description) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = vaccine.title, style = MaterialTheme.typography.titleSmall)
+            Text(text = vaccine.name, style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = vaccine.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                text = vaccine.date.toString().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 style = MaterialTheme.typography.bodySmall,
                 color = LightGray
             )
@@ -400,7 +420,7 @@ fun VaccineCard(vaccine: Description) {
 }
 
 @Composable
-fun EventCard(event: Description) {
+fun EventCard(event: EventApplied) {
     Card(
         modifier = Modifier
             .width(256.dp)
@@ -414,7 +434,7 @@ fun EventCard(event: Description) {
             Text(text = event.title, style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = event.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                text = event.date.toString().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 style = MaterialTheme.typography.bodySmall,
                 color = LightGray
             )
@@ -457,7 +477,8 @@ fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = weight.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            text = weight.date.toString()
+                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "130663089960",
+    "project_id": "com-ganecamp",
+    "storage_bucket": "com-ganecamp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130663089960:android:7c6d46f18f2146109cb21d",
+        "android_client_info": {
+          "package_name": "com.ganecamp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZJ7IN3tVE8vXEP_Tl-MmyAlChvhzN11M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

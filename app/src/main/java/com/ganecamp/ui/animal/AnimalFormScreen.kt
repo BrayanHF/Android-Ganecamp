@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,9 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
+import com.ganecamp.model.objects.Lot
 import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.general.ErrorMessages
 import com.ganecamp.ui.general.NumberTextField
+import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.geAnimalGenderInfo
 import com.ganecamp.ui.general.getAnimalStateInfo
@@ -49,21 +51,23 @@ import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.Red
+import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import java.time.ZonedDateTime
+import com.google.firebase.Timestamp
 
 @Composable
-fun AnimalFormScreen(navController: NavController, animalId: Int = 0, tag: String) {
+fun AnimalFormScreen(navController: NavController, animalId: String?, tag: String) {
     val viewModel: AnimalFormViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
-    val lots by viewModel.lots.observeAsState(initial = emptyList())
-    val animalSaved by viewModel.animalSaved.collectAsState()
+    val lots by viewModel.lots.collectAsState(initial = emptyList())
+    val animalSaved by viewModel.animalSaved.collectAsState(initial = false)
+    val error by viewModel.error.collectAsState(initial = FirestoreRespond.OK)
 
     LaunchedEffect(animalId) {
         viewModel.loadLots()
         viewModel.loadTag(tag)
-        if (animalId != 0) {
+        if (animalId != null) {
             viewModel.loadAnimal(animalId)
         }
     }
@@ -77,8 +81,19 @@ fun AnimalFormScreen(navController: NavController, animalId: Int = 0, tag: Strin
         }
     }
 
+    var showError by remember { mutableStateOf(false) }
+    LaunchedEffect(error) {
+        if (error != FirestoreRespond.OK) {
+            showError = true
+        }
+    }
+
+    if (showError) {
+        ShowFirestoreError(error = error, onDismiss = { showError = false })
+    }
+
     Scaffold(topBar = {
-        TopBar(title = if (animalId == 0) stringResource(id = R.string.new_animal)
+        TopBar(title = if (animalId == null) stringResource(id = R.string.new_animal)
         else stringResource(id = R.string.edit_animal),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
@@ -106,14 +121,14 @@ fun AnimalFormScreen(navController: NavController, animalId: Int = 0, tag: Strin
 @Composable
 fun AnimalFormContent(
     state: AnimalFormState,
-    lots: List<Int>,
+    lots: List<Lot>,
     onGenderChange: (Gender) -> Unit,
-    onBirthDateChange: (ZonedDateTime) -> Unit,
+    onBirthDateChange: (Timestamp) -> Unit,
     onPurchaseValueChange: (String) -> Unit,
     onSaleValueChange: (String) -> Unit,
     onStateChange: (State) -> Unit,
     onWeightChange: (String) -> Unit,
-    onLotChange: (Int) -> Unit,
+    onLotChange: (String?) -> Unit,
     onSaveClick: () -> Unit
 ) {
     val errorMessages = ErrorMessages(
@@ -140,7 +155,7 @@ fun AnimalFormContent(
         LotDropdown(lots = lots, selectedLot = state.lotId, onLotChange = onLotChange)
 
         val weightError = validateNumber(state.weight, errorMessages)
-        if (state.id == 0) {
+        if (state.id == null) {
             NumberTextField(value = state.weight,
                 onValueChange = {
                     onWeightChange(it)
@@ -196,7 +211,7 @@ fun AnimalFormContent(
         Button(
             onClick = onSaveClick,
             modifier = Modifier.align(Alignment.End),
-            enabled = (state.id != 0 || weightError == null) && purchaseValueError == null && (state.state != State.Sold || saleValueError == null)
+            enabled = (state.id != null || weightError == null) && purchaseValueError == null && (state.state != State.Sold || saleValueError == null)
         ) {
             Text(stringResource(id = R.string.save))
         }
@@ -210,7 +225,8 @@ fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
     val genderInfo = geAnimalGenderInfo(selectedGender)
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = stringResource(id = genderInfo.textRes),
+        OutlinedTextField(
+            value = stringResource(id = genderInfo.textRes),
             trailingIcon = {
                 Image(
                     painter = painterResource(id = genderInfo.iconRes),
@@ -223,7 +239,7 @@ fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -262,7 +278,7 @@ fun StateDropdown(selectedState: State, onStateChange: (State) -> Unit) {
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
             trailingIcon = {
                 Box(
                     modifier = Modifier
@@ -303,9 +319,9 @@ fun StateDropdown(selectedState: State, onStateChange: (State) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LotDropdown(lots: List<Int>, selectedLot: Int?, onLotChange: (Int) -> Unit) {
+fun LotDropdown(lots: List<Lot>, selectedLot: String?, onLotChange: (String?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val lotsWithZero = listOf(0) + lots
+    val lotsWithNull = listOf(null) + lots
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(value = formatLot(selectedLot),
@@ -314,7 +330,7 @@ fun LotDropdown(lots: List<Int>, selectedLot: Int?, onLotChange: (Int) -> Unit) 
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_lot),
@@ -327,16 +343,25 @@ fun LotDropdown(lots: List<Int>, selectedLot: Int?, onLotChange: (Int) -> Unit) 
             onDismissRequest = { expanded = false },
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
-            lotsWithZero.forEach { lot ->
+            lotsWithNull.forEach { lot ->
                 DropdownMenuItem(onClick = {
-                    onLotChange(lot)
+                    if (lot != null) {
+                        onLotChange(lot.id)
+                    } else {
+                        onLotChange(null)
+                    }
                     expanded = false
                 }, text = {
-                    Text(formatLot(lot))
+                    if (lot != null) {
+                        Text(formatLot(lot.name))
+                    } else {
+                        Text("ND")
+                    }
                 })
             }
         }
     }
 }
 
-private fun formatLot(lot: Int?) = if (lot == null || lot == 0) "ND" else lot.toString()
+private fun formatLot(lotName: String?) =
+    if (lotName == null || lotName == "") "ND" else lotName.toString()
