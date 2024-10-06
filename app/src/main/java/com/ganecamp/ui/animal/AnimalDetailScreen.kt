@@ -137,7 +137,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
                     onClick = {
                         viewModel.deleteAnimal(animal!!.tag)
                         navController.navigate(AnimalsNav) {
-                            popUpTo(AnimalDetailNav) { inclusive = true }
+                            popUpTo(AnimalDetailNav(animalId)) { inclusive = true }
                         }
                     },
                     shape = RoundedCornerShape(50),

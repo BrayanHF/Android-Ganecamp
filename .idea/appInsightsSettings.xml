@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.ganecamp" />
+                  <option name="mobileSdkAppId" value="1:130663089960:android:7c6d46f18f2146109cb21d" />
+                  <option name="projectId" value="com-ganecamp" />
+                  <option name="projectNumber" value="130663089960" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

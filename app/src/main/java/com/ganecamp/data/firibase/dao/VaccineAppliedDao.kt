@@ -3,6 +3,8 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
+import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.model.objects.AnimalVaccine
 import com.ganecamp.model.objects.VaccineApplied
 import com.ganecamp.utilities.enums.FirestoreRespond
@@ -18,7 +20,8 @@ import javax.inject.Singleton
 class VaccineAppliedDao @Inject constructor(
     private val db: FirebaseFirestore,
     private val farmSessionManager: FarmSessionManager,
-    private val vaccineDao: VaccineDao
+    private val vaccineDao: VaccineDao,
+    private val networkStatusHelper: NetworkStatusHelper
 ) {
 
     private fun getAnimalVaccinesCollectionReference(animalId: String): CollectionReference? {
@@ -38,7 +41,7 @@ class VaccineAppliedDao @Inject constructor(
 
         return try {
             val animalVaccines = mutableListOf<VaccineApplied>()
-            val animalVaccinesCollection = animalVaccinesReference.get().await()
+            val animalVaccinesCollection = animalVaccinesReference.get(networkStatusHelper.getSourceFrom()).await()
             animalVaccinesCollection.forEach { document ->
                 val animalVaccine = document.toObject<AnimalVaccine>()
                 val vaccineRespond = vaccineDao.getVaccineById(animalVaccine.vaccineId)

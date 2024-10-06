@@ -3,6 +3,8 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
+import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.model.objects.Vaccine
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
@@ -15,7 +17,9 @@ import javax.inject.Singleton
 
 @Singleton
 class VaccineDao @Inject constructor(
-    private val db: FirebaseFirestore, private val farmSessionManager: FarmSessionManager
+    private val db: FirebaseFirestore,
+    private val farmSessionManager: FarmSessionManager,
+    private val networkStatusHelper: NetworkStatusHelper
 ) {
 
     private val generalVaccineCollectionReference =
@@ -37,14 +41,16 @@ class VaccineDao @Inject constructor(
 
         return try {
             val vaccines = mutableListOf<Vaccine>()
-            val farmVaccineCollection = farmVaccineCollectionReference.get().await()
+            val farmVaccineCollection =
+                farmVaccineCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
             farmVaccineCollection.forEach { document ->
                 val vaccine = document.toObject<Vaccine>()
                 vaccine.id = document.id
                 vaccines.add(vaccine)
             }
 
-            val generalVaccineCollection = generalVaccineCollectionReference.get().await()
+            val generalVaccineCollection =
+                generalVaccineCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
             generalVaccineCollection.forEach { document ->
                 val vaccine = document.toObject<Vaccine>()
                 vaccine.id = document.id
@@ -63,7 +69,9 @@ class VaccineDao @Inject constructor(
         )
         return try {
             val vaccine: Vaccine?
-            val farmVaccineDocument = farmVaccineCollectionReference.document(id).get().await()
+            val farmVaccineDocument =
+                farmVaccineCollectionReference.document(id).get(networkStatusHelper.getSourceFrom())
+                    .await()
             if (farmVaccineDocument != null) {
                 vaccine = farmVaccineDocument.toObject<Vaccine>()
                 if (vaccine != null) {
@@ -71,8 +79,8 @@ class VaccineDao @Inject constructor(
                     return Pair(vaccine, FirestoreRespond.OK)
                 }
             } else {
-                val generalVaccineDocument =
-                    generalVaccineCollectionReference.document(id).get().await()
+                val generalVaccineDocument = generalVaccineCollectionReference.document(id)
+                    .get(networkStatusHelper.getSourceFrom()).await()
                 vaccine = generalVaccineDocument.toObject<Vaccine>()
                 if (vaccine != null) {
                     vaccine.id = generalVaccineDocument.id

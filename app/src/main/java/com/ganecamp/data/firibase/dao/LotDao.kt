@@ -3,6 +3,8 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
+import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.model.objects.Animal
 import com.ganecamp.model.objects.Lot
 import com.ganecamp.utilities.enums.FirestoreRespond
@@ -16,7 +18,9 @@ import javax.inject.Singleton
 
 @Singleton
 class LotDao @Inject constructor(
-    private val db: FirebaseFirestore, private val farmSessionManager: FarmSessionManager
+    private val db: FirebaseFirestore,
+    private val farmSessionManager: FarmSessionManager,
+    private val networkStatusHelper: NetworkStatusHelper
 ) {
 
     private fun getLotCollectionReference(): CollectionReference? {
@@ -35,7 +39,7 @@ class LotDao @Inject constructor(
 
         return try {
             val lots = mutableListOf<Lot>()
-            val lotsCollection = lotCollectionReference.get().await()
+            val lotsCollection = lotCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
             lotsCollection.forEach { document ->
                 val lot = document.toObject<Lot>()
                 lot.id = document.id
@@ -59,7 +63,7 @@ class LotDao @Inject constructor(
                 db.collection(FirestoreCollections.FARM_COLLECTION).document(farmToken)
                     .collection(FirestoreCollections.ANIMAL_COLLECTION)
 
-            val querySnapshot = animalCollectionReference.whereEqualTo("lotId", lotId).get().await()
+            val querySnapshot = animalCollectionReference.whereEqualTo("lotId", lotId).get(networkStatusHelper.getSourceFrom()).await()
             querySnapshot?.documents?.forEach { document ->
                 val animal = document.toObject<Animal>()
                 animal?.let {
@@ -81,7 +85,7 @@ class LotDao @Inject constructor(
             getLotCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
 
         return try {
-            val documentSnapshot = lotCollectionReference.document(id).get().await()
+            val documentSnapshot = lotCollectionReference.document(id).get(networkStatusHelper.getSourceFrom()).await()
             val lot = documentSnapshot.toObject<Lot>()
             lot?.let {
                 lot.id = documentSnapshot.id

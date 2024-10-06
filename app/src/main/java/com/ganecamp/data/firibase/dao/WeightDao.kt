@@ -3,6 +3,8 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
+import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.model.objects.Weight
 import com.ganecamp.model.objects.WeightValue
 import com.ganecamp.utilities.enums.FirestoreRespond
@@ -18,7 +20,9 @@ import javax.inject.Singleton
 
 @Singleton
 class WeightDao @Inject constructor(
-    private val db: FirebaseFirestore, private val farmSessionManager: FarmSessionManager
+    private val db: FirebaseFirestore,
+    private val farmSessionManager: FarmSessionManager,
+    private val networkStatusHelper: NetworkStatusHelper
 ) {
 
     private fun getAnimalWeightsCollectionReference(animalId: String): CollectionReference? {
@@ -38,7 +42,8 @@ class WeightDao @Inject constructor(
 
         return try {
             val weights = mutableListOf<Weight>()
-            val animalWeightsCollection = animalWeightsReference.get().await()
+            val animalWeightsCollection =
+                animalWeightsReference.get(networkStatusHelper.getSourceFrom()).await()
             animalWeightsCollection.forEach { document ->
                 val weight = document.toObject<Weight>()
                 weight.id = document.id
@@ -95,7 +100,8 @@ class WeightDao @Inject constructor(
         farmSessionManager.getFarm() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
         return try {
             val weightValueQuery = db.collection(FirestoreCollections.WEIGHT_VALUE_COLLECTION)
-                .orderBy("date", Query.Direction.DESCENDING).limit(1).get().await()
+                .orderBy("date", Query.Direction.DESCENDING).limit(1)
+                .get(networkStatusHelper.getSourceFrom()).await()
 
             if (!weightValueQuery.isEmpty) {
                 val weightValue = weightValueQuery.toObjects<WeightValue>().firstOrNull()
