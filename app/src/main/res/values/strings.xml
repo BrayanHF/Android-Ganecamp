@@ -50,4 +50,7 @@
     <string name="error_invalid_characters">Caracteres Invalidos</string>
     <string name="calendar">Calendario</string>
     <string name="approximate_purchase_value">Aproximado venta</string>
+    <string name="welcome">Bienvenido</string>
+    <string name="email">Correo Electronico</string>
+    <string name="password">Contraseña</string>
 </resources>
