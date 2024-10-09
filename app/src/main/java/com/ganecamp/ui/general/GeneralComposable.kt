@@ -1,14 +1,24 @@
 package com.ganecamp.ui.general
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,14 +44,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ganecamp.R
+import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.firebase.Timestamp
 import java.time.format.DateTimeFormatter
@@ -205,4 +219,98 @@ fun ShowFirestoreError(error: FirestoreRespond, onDismiss: () -> Unit) {
                 Text("Cerrar")
             }
         })
+}
+
+@Composable
+fun TwoPartScreen(upperPart: @Composable () -> Unit, lowerPart: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(1 / 3f)
+                .background(White)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Green, shape = RoundedCornerShape(
+                            topStart = CornerSize(0.dp),
+                            topEnd = CornerSize(0.dp),
+                            bottomStart = CornerSize(0.dp),
+                            bottomEnd = CornerSize(64.dp)
+                        )
+                    )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    upperPart()
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(Green)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        White, shape = RoundedCornerShape(
+                            topStart = CornerSize(64.dp),
+                            topEnd = CornerSize(0.dp),
+                            bottomStart = CornerSize(0.dp),
+                            bottomEnd = CornerSize(0.dp)
+                        )
+                    )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    lowerPart()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LogoAndSlogan(color: Color = Black) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+        Icon(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = stringResource(id = R.string.ic_cow_login),
+            modifier = Modifier.height(64.dp),
+            tint = color
+        )
+        Spacer(modifier = Modifier.padding(8.dp))
+        Column {
+            Text(
+                text = stringResource(id = R.string.ganecamp),
+                style = MaterialTheme.typography.titleLarge,
+                color = color
+            )
+            Text(
+                text = stringResource(id = R.string.slogan),
+                style = MaterialTheme.typography.bodySmall,
+                color = color
+            )
+        }
+    }
 }

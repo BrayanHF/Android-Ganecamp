@@ -53,4 +53,21 @@
     <string name="welcome">Bienvenido</string>
     <string name="email">Correo Electronico</string>
     <string name="password">Contraseña</string>
+    <string name="hide_password">Esconder Contraseña</string>
+    <string name="show_password">Ver Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="no_account">¿No tienes una cuenta? Registrate</string>
+    <string name="close">Cerrar</string>
+    <string name="welcome_to_ganecamp">¡Bienvenido a Ganecamp!</string>
+    <string name="glad_register">Nos alegra tenerte aqui</string>
+    <string name="user_name">Nombre</string>
+    <string name="phone_number">Número de teléfono</string>
+    <string name="repeat_password">Repita la contraseña</string>
+    <string name="warning_token">El token de acceso debe ser proporcionado por el propietario de la finca. Si no lo tienes, comunícate con él para poder registrarte.</string>
+    <string name="token">Token</string>
+    <string name="register">Registrate</string>
+    <string name="ic_cow_login">Icono vaca para login</string>
+    <string name="ganecamp">Ganecamp</string>
+    <string name="slogan">Tu ganado en tus manos</string>
 </resources>
