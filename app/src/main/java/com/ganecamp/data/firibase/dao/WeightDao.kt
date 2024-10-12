@@ -27,8 +27,8 @@ class WeightDao @Inject constructor(
 
     private fun getAnimalWeightsCollectionReference(animalId: String): CollectionReference? {
         val farm = farmSessionManager.getFarm()
-        farm?.token?.let { token ->
-            return db.collection(FirestoreCollections.FARM_COLLECTION).document(token)
+        farm?.id?.let {
+            return db.collection(FirestoreCollections.FARM_COLLECTION).document(it)
                 .collection(FirestoreCollections.ANIMAL_COLLECTION).document(animalId)
                 .collection(FirestoreCollections.WEIGHT_COLLECTION)
         }

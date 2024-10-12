@@ -27,8 +27,8 @@ class EventAppliedDao @Inject constructor(
 
     private fun getAnimalEventsCollectionReference(animalId: String): CollectionReference? {
         val farm = farmSessionManager.getFarm()
-        farm?.token?.let { token ->
-            return db.collection(FirestoreCollections.FARM_COLLECTION).document(token)
+        farm?.id?.let {
+            return db.collection(FirestoreCollections.FARM_COLLECTION).document(it)
                 .collection(FirestoreCollections.ANIMAL_COLLECTION).document(animalId)
                 .collection(FirestoreCollections.ANIMAL_EVENT_COLLECTION)
         }
@@ -37,8 +37,8 @@ class EventAppliedDao @Inject constructor(
 
     private fun getLotEventsCollectionReference(lotId: String): CollectionReference? {
         val farm = farmSessionManager.getFarm()
-        farm?.token?.let { token ->
-            return db.collection(FirestoreCollections.FARM_COLLECTION).document(token)
+        farm?.id?.let {
+            return db.collection(FirestoreCollections.FARM_COLLECTION).document(it)
                 .collection(FirestoreCollections.LOT_COLLECTION).document(lotId)
                 .collection(FirestoreCollections.LOT_EVENT_COLLECTION)
         }

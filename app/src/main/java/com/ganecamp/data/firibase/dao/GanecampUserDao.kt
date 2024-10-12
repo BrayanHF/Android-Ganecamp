@@ -20,13 +20,11 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
     suspend fun getUserByEmail(email: String): Pair<GanecampUser?, FirestoreRespond> {
         return try {
             val querySnapshot = usersCollection.whereEqualTo("email", email).get().await()
-            if (!querySnapshot.isEmpty) {
-                val document = querySnapshot.documents.first()
-                val user = document.toObject<GanecampUser>()
-                user?.id = document.id
-                return Pair(user, OK)
-            }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            if (querySnapshot.isEmpty) return Pair(null, FirestoreRespond.NOT_FOUND)
+            val document = querySnapshot.documents.first()
+            val user = document.toObject<GanecampUser>()
+            user?.id = document.id
+            Pair(user, OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getUserByEmail: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
@@ -35,11 +33,8 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
 
     suspend fun createUser(user: GanecampUser): FirestoreRespond {
         return try {
-            user.email.let {
-                usersCollection.document().set(user).await()
-                return OK
-            }
-            FirestoreRespond.NULL_POINTER
+            usersCollection.add(user).await()
+            return OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createUser: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
@@ -49,7 +44,7 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
     // Todo: Update email in firebase auth
     suspend fun updateUser(user: GanecampUser): FirestoreRespond {
         return try {
-            user.email.let {
+            user.id?.let {
                 usersCollection.document(it).set(user).await()
                 return OK
             }

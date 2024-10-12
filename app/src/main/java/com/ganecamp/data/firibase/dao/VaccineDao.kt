@@ -27,8 +27,8 @@ class VaccineDao @Inject constructor(
 
     private fun getFarmVaccineCollectionReference(): CollectionReference? {
         val farm = farmSessionManager.getFarm()
-        farm?.token?.let { token ->
-            return db.collection(FirestoreCollections.FARM_COLLECTION).document(token)
+        farm?.id?.let {
+            return db.collection(FirestoreCollections.FARM_COLLECTION).document(it)
                 .collection(FirestoreCollections.FARM_VACCINE_COLLECTION)
         }
         return null
