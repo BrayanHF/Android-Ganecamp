@@ -21,8 +21,8 @@ class LotDao @Inject constructor(
 
     private fun getLotCollectionReference(): CollectionReference? {
         val farm = farmSessionManager.getFarm()
-        farm?.token?.let { token ->
-            return db.collection(FirestoreCollections.FARM_COLLECTION).document(token)
+        farm?.id?.let {
+            return db.collection(FirestoreCollections.FARM_COLLECTION).document(it)
                 .collection(FirestoreCollections.LOT_COLLECTION)
         }
         return null
@@ -49,14 +49,14 @@ class LotDao @Inject constructor(
     }
 
     suspend fun getAnimalsByLotId(lotId: String): Pair<List<Animal>, FirestoreRespond> {
-        val farmToken = farmSessionManager.getFarm()?.token ?: return Pair(
+        val farmId = farmSessionManager.getFarm()?.id ?: return Pair(
             emptyList(), FirestoreRespond.NO_FARM_SESSION
         )
 
         return try {
             val animals = mutableListOf<Animal>()
             val animalCollectionReference =
-                db.collection(FirestoreCollections.FARM_COLLECTION).document(farmToken)
+                db.collection(FirestoreCollections.FARM_COLLECTION).document(farmId)
                     .collection(FirestoreCollections.ANIMAL_COLLECTION)
 
             val querySnapshot = animalCollectionReference.whereEqualTo("lotId", lotId).get().await()
