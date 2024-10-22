@@ -42,16 +42,19 @@ import com.ganecamp.R
 import com.ganecamp.model.objects.Animal
 import com.ganecamp.model.objects.EventApplied
 import com.ganecamp.model.objects.Lot
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightBlue
+import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.utilities.enums.FirestoreRespond
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+//Todo: Change all the design and do the logic, this is for all the screen
 @Composable
 fun LotDetailScreen(navController: NavController, lotId: String?) {
     val viewModel: LotDetailViewModel = hiltViewModel()
@@ -60,6 +63,8 @@ fun LotDetailScreen(navController: NavController, lotId: String?) {
     val events: List<EventApplied> by viewModel.events.collectAsState()
     val animals: List<Animal> by viewModel.animals.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    BarColor(LightGreen)
 
     LaunchedEffect(lotId) {
         if (lotId != null) {

@@ -47,6 +47,7 @@ import com.ganecamp.model.objects.Animal
 import com.ganecamp.model.objects.EventApplied
 import com.ganecamp.model.objects.VaccineApplied
 import com.ganecamp.model.objects.Weight
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.TopBar
@@ -58,6 +59,7 @@ import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGray
+import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
@@ -75,6 +77,8 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     val age by viewModel.ageAnimal.collectAsState()
     val weightValue by viewModel.weightValue.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    BarColor(LightGreen)
 
     LaunchedEffect(animalId) {
         if (animalId != null) {
@@ -126,13 +130,15 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
                     items = vaccines,
                     cardContent = { VaccineCard(it) },
                     addActionTextRes = R.string.add_vaccine,
-                    onClickAdd = { /*TODO*/ })
+                    onClickAdd = { /*Todo: All the vaccines screen and here the navigation*/ })
                 SectionWithLazyRow(titleRes = R.string.events,
                     items = events,
                     cardContent = { EventCard(it) },
                     addActionTextRes = R.string.add_event,
-                    onClickAdd = { /*TODO*/ })
-                AnimalWeights(weights = weights, onClickAdd = { /*TODO*/ })
+                    onClickAdd = { /*Todo: All the events screen and here the navigation*/ })
+                AnimalWeights(
+                    weights = weights,
+                    onClickAdd = { /*Todo: All the weights screen and here the navigation*/ })
                 OutlinedButton(
                     onClick = {
                         viewModel.deleteAnimal(animal!!.tag)
@@ -156,6 +162,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     }
 }
 
+//Todo: Fix the dates and the number format
 @Composable
 fun AnimalInfo(
     navController: NavHostController,
@@ -280,7 +287,8 @@ fun InfoRowWithClickableLot(
                 color = LightGray
             )
             Text(
-                text = animal.lotId ?: "ND", style = MaterialTheme.typography.bodyMedium
+                text = animal.lotId ?: stringResource(id = R.string.nothing),
+                style = MaterialTheme.typography.bodyMedium
             )
         }
         Column(
@@ -394,6 +402,7 @@ fun <Applied> SectionWithLazyRow(
     }
 }
 
+//Todo: Clickable card with navigation to the detail of the vaccine
 @Composable
 fun VaccineCard(vaccine: VaccineApplied) {
     Card(
@@ -419,6 +428,7 @@ fun VaccineCard(vaccine: VaccineApplied) {
     }
 }
 
+//Todo: Clickable card with navigation to the detail of the event
 @Composable
 fun EventCard(event: EventApplied) {
     Card(
@@ -444,6 +454,7 @@ fun EventCard(event: EventApplied) {
     }
 }
 
+//Todo: Clickable card with navigation to the detail of the weight
 @Composable
 fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
     Column(

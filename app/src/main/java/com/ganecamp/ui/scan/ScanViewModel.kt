@@ -25,18 +25,24 @@ class ScanViewModel @Inject constructor(private val animalService: AnimalService
     private val _error = MutableStateFlow(FirestoreRespond.OK)
     val error: StateFlow<FirestoreRespond> = _error
 
-    // Todo: Show Error Dialog
     fun onTagReceived(tag: String) {
         viewModelScope.launch {
             val animalRespond = animalService.getAnimalByTag(tag)
-            if (animalRespond.second == FirestoreRespond.OK) {
-                animalRespond.first?.let {
-                    _animalId.value = it.id
+            when (animalRespond.second) {
+                FirestoreRespond.OK -> {
+                    animalRespond.first?.let {
+                        _animalId.value = it.id
+                    }
                 }
-            } else if (animalRespond.second == FirestoreRespond.NOT_FOUND) {
-                _showConfirmDialog.value = true
-            } else {
-                _error.value = animalRespond.second
+
+                FirestoreRespond.NOT_FOUND -> {
+                    _showConfirmDialog.value = true
+                }
+
+                else -> {
+                    _error.value = animalRespond.second
+                    _showErrorDialog.value = true
+                }
             }
         }
     }

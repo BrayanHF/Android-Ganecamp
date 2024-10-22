@@ -16,5 +16,5 @@ data class Animal(
     val purchaseDate: Timestamp = Timestamp.now(),
     val saleValue: Double = 0.0,
     val saleDate: Timestamp = Timestamp.now(),
-    val state: State = State.Healthy,
+    val state: State = State.Healthy
 )

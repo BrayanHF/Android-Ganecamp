@@ -24,19 +24,24 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.navigation.LotsNav
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.firebase.Timestamp
 
+//Todo: Change how the screen show the errors and add icons for the text fields
 @Composable
 fun LotFormScreen(navController: NavController, lotId: String?) {
     val viewModel: LotFormViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
     val lotSaved by viewModel.lotSaved.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    BarColor(White)
 
     LaunchedEffect(lotId) {
         if (lotId != null) {

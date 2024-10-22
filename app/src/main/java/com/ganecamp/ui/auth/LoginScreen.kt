@@ -136,7 +136,7 @@ fun Login(navController: NavController, viewModel: LoginViewModel) {
         )
     }
     Spacer(modifier = Modifier.padding(8.dp))
-    TextButton(onClick = { /*TODO*/ }) {
+    TextButton(onClick = { /*Todo: Forgot password, the logic and the page*/ }) {
         Text(text = stringResource(id = R.string.forgot_password))
     }
     Spacer(modifier = Modifier.padding(8.dp))
@@ -148,13 +148,14 @@ fun Login(navController: NavController, viewModel: LoginViewModel) {
         viewModel.signOut()
         AlertDialog(containerColor = MaterialTheme.colorScheme.background,
             onDismissRequest = { viewModel.closeErrorDialog() },
-            title = { /*TODO*/ },
-            text = { /*TODO*/ },
+            title = { /*Todo: Error message for login*/ },
+            text = { /*Todo: Error message description for login*/ },
             confirmButton = {
                 TextButton(onClick = { viewModel.closeErrorDialog() }) {
                     Text(stringResource(id = R.string.close))
                 }
-            })
+            }
+        )
     }
 
 }

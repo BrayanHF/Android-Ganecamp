@@ -40,6 +40,7 @@ fun BottomBar(navController: NavHostController) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination?.route
 
+            //Todo: Change to safely navigation
             bottomBarItems.forEach { item ->
                 NavigationBarItem(label = {
                     val isSelected = currentDestination == item.screen

@@ -57,6 +57,7 @@ import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.Timestamp
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -108,6 +109,8 @@ fun TopBar(
     )
 }
 
+
+//Todo: Fix the format of the date picker and the change the colors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
@@ -313,4 +316,13 @@ fun LogoAndSlogan(color: Color = Black) {
             )
         }
     }
+}
+
+@Composable
+fun BarColor(color: Color) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(
+        color = color,
+        darkIcons = true
+    )
 }

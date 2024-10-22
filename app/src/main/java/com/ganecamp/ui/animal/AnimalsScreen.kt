@@ -40,11 +40,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.model.objects.Animal
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.navigation.AnimalDetailNav
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 
@@ -54,6 +56,8 @@ fun AnimalScreen(navController: NavHostController) {
     val animals by viewModel.animals.collectAsState(emptyList())
     val isLoading by viewModel.isLoading.collectAsState(true)
     val error by viewModel.error.collectAsState(FirestoreRespond.OK)
+
+    BarColor(White)
 
     LaunchedEffect(Unit) {
         viewModel.loadAnimals()
@@ -101,6 +105,7 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
     }
 }
 
+//Todo: Add breed and think in new design for searches
 @Composable
 fun AnimalCard(navController: NavHostController, animal: Animal) {
     val genderIcon: Int = if (animal.gender == Gender.Male) {
@@ -132,7 +137,7 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "ID: ${animal.id}", style = MaterialTheme.typography.titleSmall)
+                Text(text = "TAG: ${animal.tag}", style = MaterialTheme.typography.titleSmall)
                 if (animal.lotId != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(

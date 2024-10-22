@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.model.objects.Lot
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.general.ErrorMessages
 import com.ganecamp.ui.general.NumberTextField
@@ -51,6 +52,7 @@ import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.Red
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -63,6 +65,8 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
     val lots by viewModel.lots.collectAsState(initial = emptyList())
     val animalSaved by viewModel.animalSaved.collectAsState(initial = false)
     val error by viewModel.error.collectAsState(initial = FirestoreRespond.OK)
+
+    BarColor(White)
 
     LaunchedEffect(animalId) {
         viewModel.loadLots()

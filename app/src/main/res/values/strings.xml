@@ -70,4 +70,10 @@
     <string name="ic_cow_login">Icono vaca para login</string>
     <string name="ganecamp">Ganecamp</string>
     <string name="slogan">Tu ganado en tus manos</string>
+    <string name="scan_rfid">Escanee o ingrese el ID del TAG</string>
+    <string name="tag_rfid">Tag RFID</string>
+    <string name="tag_not_found">TAG no encontrado</string>
+    <string name="add_tag_confirm">Este TAG no está en la base de datos. ¿Deseas agregarlo a un animal?</string>
+    <string name="cancel">Cancelar</string>
+    <string name="nothing">ND</string>
 </resources>

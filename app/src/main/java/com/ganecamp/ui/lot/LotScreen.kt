@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.model.objects.Lot
+import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.general.ShowFirestoreError
@@ -47,14 +48,18 @@ import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Typography
+import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 
+//Todo: Maybe change whole design and change the add bottom
 @Composable
 fun LotScreen(navController: NavController) {
     val viewModel: LotViewModel = hiltViewModel()
     val lots by viewModel.lots.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState(initial = true)
     val error by viewModel.error.collectAsState()
+
+    BarColor(White)
 
     LaunchedEffect(Unit) {
         viewModel.loadLots()

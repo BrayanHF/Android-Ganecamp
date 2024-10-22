@@ -31,6 +31,4 @@ object FirebaseModule {
     @Provides
     fun provideFirebaseAuthentication(): FirebaseAuth = FirebaseAuth.getInstance()
 
-
-
 }

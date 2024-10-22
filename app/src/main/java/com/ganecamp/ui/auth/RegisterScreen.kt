@@ -65,6 +65,7 @@ fun WelcomeRegister() {
     LogoAndSlogan()
 }
 
+//Todo: Contact us for the token
 @Composable
 fun Register(viewModel: RegisterViewModel) {
     val name by viewModel.name.collectAsState()
@@ -219,8 +220,8 @@ fun Register(viewModel: RegisterViewModel) {
         viewModel.signOut()
         AlertDialog(containerColor = MaterialTheme.colorScheme.background,
             onDismissRequest = { viewModel.closeErrorDialog() },
-            title = { /*TODO*/ },
-            text = { /*TODO*/ },
+            title = { /*Todo: Error message for register*/ },
+            text = { /*Todo: Error message description for register*/ },
             confirmButton = {
                 TextButton(onClick = { viewModel.closeErrorDialog() }) {
                     Text(stringResource(id = R.string.close))
