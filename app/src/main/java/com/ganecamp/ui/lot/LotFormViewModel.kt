@@ -10,6 +10,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,16 +50,16 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
         _uiState.value = _uiState.value.copy(purchaseValue = purchaseValue)
     }
 
-    fun onPurchaseDateChange(purchaseDate: Timestamp) {
-        _uiState.value = _uiState.value.copy(purchaseDate = purchaseDate)
+    fun onPurchaseDateChange(purchaseDate: Instant) {
+        _uiState.value = _uiState.value.copy(purchaseDate = Timestamp(Date.from(purchaseDate)))
     }
 
     fun onSaleValueChange(saleValue: String) {
         _uiState.value = _uiState.value.copy(saleValue = saleValue)
     }
 
-    fun onSaleDateChange(saleDate: Timestamp) {
-        _uiState.value = _uiState.value.copy(saleDate = saleDate)
+    fun onSaleDateChange(saleDate: Instant) {
+        _uiState.value = _uiState.value.copy(saleDate = Timestamp(Date.from(saleDate)))
     }
 
     fun saveLot() {

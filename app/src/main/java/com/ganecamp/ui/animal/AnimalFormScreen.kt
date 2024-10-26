@@ -56,7 +56,7 @@ import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import com.google.firebase.Timestamp
+import java.time.Instant
 
 @Composable
 fun AnimalFormScreen(navController: NavController, animalId: String?, tag: String) {
@@ -127,7 +127,7 @@ fun AnimalFormContent(
     state: AnimalFormState,
     lots: List<Lot>,
     onGenderChange: (Gender) -> Unit,
-    onBirthDateChange: (Timestamp) -> Unit,
+    onBirthDateChange: (Instant) -> Unit,
     onPurchaseValueChange: (String) -> Unit,
     onSaleValueChange: (String) -> Unit,
     onStateChange: (State) -> Unit,
@@ -151,7 +151,7 @@ fun AnimalFormContent(
         StateDropdown(selectedState = state.state, onStateChange = onStateChange)
 
         DatePickerField(
-            selectedDate = state.birthDate,
+            selectedDate = state.birthDate.toInstant(),
             onDateChange = onBirthDateChange,
             label = R.string.birth_date
         )

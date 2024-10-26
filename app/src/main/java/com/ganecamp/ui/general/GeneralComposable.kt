@@ -58,9 +58,9 @@ import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.firebase.Timestamp
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 @Composable
 fun IsLoading() {
@@ -109,20 +109,19 @@ fun TopBar(
     )
 }
 
-
 //Todo: Fix the format of the date picker and the change the colors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    selectedDate: Timestamp, onDateChange: (Timestamp) -> Unit, label: Int
+    selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int
 ) {
     val datePickerState = rememberDatePickerState()
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
     val focusManager = LocalFocusManager.current
 
     var showDate by remember { mutableStateOf(false) }
 
-    val formattedDate = selectedDate.toDate().toString().format(formatter)
+    val formattedDate = formatter.format(selectedDate)
 
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -147,26 +146,28 @@ fun DatePickerField(
             })
 
         if (showDate) {
-            DatePickerDialog(colors = DatePickerDefaults.colors()
-                .copy(containerColor = MaterialTheme.colorScheme.background),
-                onDismissRequest = {
+            DatePickerDialog(colors = DatePickerDefaults.colors().copy(
+                containerColor = White
+            ), onDismissRequest = {
+                showDate = false
+                focusManager.clearFocus()
+            }, confirmButton = {
+                Button(onClick = {
                     showDate = false
+                    val date = datePickerState.selectedDateMillis
+                    val instant = date?.let { Instant.ofEpochMilli(it) }
+                    if (instant != null) onDateChange(instant)
                     focusManager.clearFocus()
-                },
-                confirmButton = {
-                    Button(onClick = {
-                        showDate = false
-                        val date = datePickerState.selectedDateMillis
-                        val timestamp = date?.let {
-                            Timestamp(Date(it))
-                        }
-                        if (timestamp != null) onDateChange(timestamp)
-                        focusManager.clearFocus()
-                    }) {
-                        Text(stringResource(id = R.string.confirm))
-                    }
                 }) {
-                DatePicker(state = datePickerState)
+                    Text(stringResource(id = R.string.confirm))
+                }
+            }) {
+                DatePicker(
+                    state = datePickerState,
+                    colors = DatePickerDefaults.colors().copy(
+                        containerColor = White
+                    )
+                )
             }
         }
     }
@@ -322,7 +323,6 @@ fun LogoAndSlogan(color: Color = Black) {
 fun BarColor(color: Color) {
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(
-        color = color,
-        darkIcons = true
+        color = color, darkIcons = true
     )
 }

@@ -31,7 +31,7 @@ import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.navigation.LotsNav
 import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
-import com.google.firebase.Timestamp
+import java.time.Instant
 
 //Todo: Change how the screen show the errors and add icons for the text fields
 @Composable
@@ -83,9 +83,9 @@ fun LotFormScreen(navController: NavController, lotId: String?) {
 fun AnimalFormContent(
     state: LotFormState,
     onPurchaseValueChange: (String) -> Unit,
-    onPurchaseDateChange: (Timestamp) -> Unit,
+    onPurchaseDateChange: (Instant) -> Unit,
     onSaleValueChange: (String) -> Unit,
-    onSaleDateChange: (Timestamp) -> Unit,
+    onSaleDateChange: (Instant) -> Unit,
     onSaveClick: () -> Unit
 ) {
     Column(
@@ -104,7 +104,7 @@ fun AnimalFormContent(
         )
 
         DatePickerField(
-            selectedDate = state.purchaseDate,
+            selectedDate = state.purchaseDate.toInstant(),
             onDateChange = onPurchaseDateChange,
             label = R.string.purchase_date
         )
@@ -118,7 +118,7 @@ fun AnimalFormContent(
         )
 
         DatePickerField(
-            selectedDate = state.saleDate,
+            selectedDate = state.saleDate.toInstant(),
             onDateChange = onSaleDateChange,
             label = R.string.sale_date
         )

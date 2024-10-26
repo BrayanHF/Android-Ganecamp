@@ -76,4 +76,7 @@
     <string name="add_tag_confirm">Este TAG no está en la base de datos. ¿Deseas agregarlo a un animal?</string>
     <string name="cancel">Cancelar</string>
     <string name="nothing">ND</string>
+    <string name="breed">Raza</string>
+    <string name="profit">Ganancia</string>
+    <string name="loss">Perdida</string>
 </resources>

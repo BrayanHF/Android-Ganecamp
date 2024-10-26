@@ -8,9 +8,10 @@ import com.google.firebase.firestore.Exclude
 data class Animal(
     @get:Exclude @set:Exclude var id: String? = null,
     val tag: String = "",
+    val nickname: String = "",
     val lotId: String? = null,
     val gender: Gender = Gender.Male,
-    val breed: String = "",
+    val breed: String = "", //Todo: Breed enum
     val birthDate: Timestamp = Timestamp.now(),
     val purchaseValue: Double = 0.0,
     val purchaseDate: Timestamp = Timestamp.now(),

@@ -18,6 +18,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -83,8 +85,8 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(gender = gender)
     }
 
-    fun onBirthDateChange(birthDate: Timestamp) {
-        _uiState.value = _uiState.value.copy(birthDate = birthDate)
+    fun onBirthDateChange(birthDate: Instant) {
+        _uiState.value = _uiState.value.copy(birthDate = Timestamp(Date.from(birthDate)))
     }
 
     fun onPurchaseValueChange(purchaseValue: String) {

@@ -64,7 +64,11 @@ import com.ganecamp.ui.theme.Red
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
+val formater: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
 
 @Composable
 fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
@@ -124,7 +128,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
                 }
 
                 AnimalInfo(
-                    navController, animal!!, age, approxSold.toString()
+                    navController, animal!!, age, approxSold
                 )
                 SectionWithLazyRow(titleRes = R.string.vaccines,
                     items = vaccines,
@@ -136,8 +140,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
                     cardContent = { EventCard(it) },
                     addActionTextRes = R.string.add_event,
                     onClickAdd = { /*Todo: All the events screen and here the navigation*/ })
-                AnimalWeights(
-                    weights = weights,
+                AnimalWeights(weights = weights,
                     onClickAdd = { /*Todo: All the weights screen and here the navigation*/ })
                 OutlinedButton(
                     onClick = {
@@ -162,13 +165,12 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     }
 }
 
-//Todo: Fix the dates and the number format
 @Composable
 fun AnimalInfo(
     navController: NavHostController,
     animal: Animal,
     age: Triple<Int, Int, Int>?,
-    approxSold: String
+    approxSold: Float
 ) {
     Card(
         modifier = Modifier
@@ -181,6 +183,12 @@ fun AnimalInfo(
             modifier = Modifier.padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Text(
+                text = "TAG: ${animal.tag}",
+                style = MaterialTheme.typography.titleSmall,
+                color = LightGray
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -188,26 +196,24 @@ fun AnimalInfo(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val genderIcon: Int = if (animal.gender == Gender.Male) {
-                    R.drawable.ic_bull
+                val genderIcon: Int
+                val genderText: Int
+                if (animal.gender == Gender.Male) {
+                    genderIcon = R.drawable.ic_bull
+                    genderText = R.string.male
                 } else {
-                    R.drawable.ic_cow
+                    genderIcon = R.drawable.ic_cow
+                    genderText = R.string.female
                 }
                 Image(
                     painter = painterResource(id = genderIcon),
                     contentDescription = stringResource(R.string.animal_icon),
                     modifier = Modifier.size(56.dp),
                 )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "ID: ${animal.id}", style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "TAG: ${animal.tag}", style = MaterialTheme.typography.titleSmall
-                    )
-                }
+                Text(
+                    text = stringResource(id = genderText),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedButton(
                     onClick = {
@@ -232,8 +238,7 @@ fun AnimalInfo(
             if (age != null) {
                 InfoRow(
                     titleRes = R.string.birth_date,
-                    value = animal.birthDate.toString()
-                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    value = formater.format(animal.birthDate.toInstant()),
                     titleRes2 = R.string.age,
                     value2 = when {
                         age.first > 0 -> "${age.first} " + stringResource(id = R.string.years)
@@ -243,21 +248,49 @@ fun AnimalInfo(
                 )
             }
 
+            InfoRow(
+                titleRes = R.string.purchase_date,
+                value = formater.format(animal.purchaseDate.toInstant()),
+                titleRes2 = R.string.purchase_value,
+                value2 = "$" + formatNumber(animal.purchaseValue.toString())
+            )
+
+
+
             if (animal.state == State.Sold) {
                 InfoRow(
-                    titleRes = R.string.purchase_value,
-                    value = "$" + formatNumber(animal.purchaseValue.toString()),
+                    titleRes = R.string.sale_date,
+                    value = formater.format(animal.saleDate.toInstant()),
                     titleRes2 = R.string.sale_value,
                     value2 = "$" + formatNumber(animal.saleValue.toString())
                 )
-            } else {
-                InfoRow(
-                    titleRes = R.string.purchase_value,
-                    value = "$" + formatNumber(animal.purchaseValue.toString()),
-                    titleRes2 = R.string.approximate_purchase_value,
-                    value2 = "$" + formatNumber(approxSold)
-                )
             }
+
+            val titleRes2: Int
+            val value2: String
+
+            if (animal.state != State.Sold) {
+                titleRes2 = R.string.approximate_purchase_value
+                value2 = "$" + formatNumber(approxSold.toString())
+            } else{
+                val difference = animal.saleValue - animal.purchaseValue
+
+                value2 = "$" + formatNumber(difference.toString())
+                titleRes2 = if (difference > 0) {
+                    R.string.profit
+                } else{
+                    R.string.loss
+                }
+            }
+
+            // Todo: Implement breed enum
+            InfoRow(
+                titleRes = R.string.breed,
+                value = animal.breed,
+                titleRes2 = titleRes2,
+                value2 = value2
+            )
+
         }
     }
 }
@@ -418,7 +451,7 @@ fun VaccineCard(vaccine: VaccineApplied) {
             Text(text = vaccine.name, style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = vaccine.date.toString().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                text = formater.format(vaccine.date.toInstant()),
                 style = MaterialTheme.typography.bodySmall,
                 color = LightGray
             )
@@ -444,7 +477,7 @@ fun EventCard(event: EventApplied) {
             Text(text = event.title, style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = event.date.toString().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                text = formater.format(event.date.toInstant()),
                 style = MaterialTheme.typography.bodySmall,
                 color = LightGray
             )
@@ -488,8 +521,7 @@ fun AnimalWeights(weights: List<Weight>, onClickAdd: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = weight.date.toString()
-                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            text = formater.format(weight.date.toInstant()),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )
