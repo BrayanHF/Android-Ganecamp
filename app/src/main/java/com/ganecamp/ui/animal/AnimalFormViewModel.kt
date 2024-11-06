@@ -3,13 +3,13 @@ package com.ganecamp.ui.animal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ganecamp.domain.services.AnimalService
-import com.ganecamp.domain.services.EventService
 import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.services.WeightService
 import com.ganecamp.model.objects.Animal
 import com.ganecamp.model.objects.Lot
 import com.ganecamp.model.objects.Weight
 import com.ganecamp.ui.general.formatNumber
+import com.ganecamp.utilities.enums.Breed
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -27,7 +27,6 @@ class AnimalFormViewModel @Inject constructor(
     private val animalService: AnimalService,
     private val lotService: LotService,
     private val weightService: WeightService,
-    private val eventService: EventService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimalFormState())
@@ -42,7 +41,6 @@ class AnimalFormViewModel @Inject constructor(
     private val _error = MutableStateFlow(FirestoreRespond.OK)
     val error: StateFlow<FirestoreRespond> = _error
 
-
     fun loadAnimal(animalId: String) {
         viewModelScope.launch {
             val animalResponse = animalService.getAnimalById(animalId)
@@ -51,13 +49,16 @@ class AnimalFormViewModel @Inject constructor(
                     _uiState.value = AnimalFormState(
                         id = animal.id,
                         tag = animal.tag,
+                        nickname = animal.nickname,
+                        lotId = animal.lotId,
                         gender = animal.gender,
+                        breed = animal.breed,
                         birthDate = animal.birthDate,
                         purchaseValue = formatNumber(animal.purchaseValue.toString()),
+                        purchaseDate = animal.purchaseDate,
                         saleValue = formatNumber(animal.saleValue.toString()),
-                        state = animal.state,
-                        lotId = animal.lotId,
-                        weight = 0f.toString()
+                        saleDate = animal.saleDate,
+                        state = animal.state
                     )
                 }
             } else {
@@ -81,8 +82,20 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(tag = tag)
     }
 
+    fun onNicknameChange(nickname: String?) {
+        _uiState.value = _uiState.value.copy(nickname = nickname)
+    }
+
+    fun onLotChange(lotId: String?) {
+        _uiState.value = _uiState.value.copy(lotId = lotId)
+    }
+
     fun onGenderChange(gender: Gender) {
         _uiState.value = _uiState.value.copy(gender = gender)
+    }
+
+    fun onBreedChange(breed: Breed) {
+        _uiState.value = _uiState.value.copy(breed = breed)
     }
 
     fun onBirthDateChange(birthDate: Instant) {
@@ -93,8 +106,16 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(purchaseValue = purchaseValue)
     }
 
+    fun onPurchaseDateChange(purchaseDate: Instant) {
+        _uiState.value = _uiState.value.copy(purchaseDate = Timestamp(Date.from(purchaseDate)))
+    }
+
     fun onSaleValueChange(saleValue: String) {
         _uiState.value = _uiState.value.copy(saleValue = saleValue)
+    }
+
+    fun onSaleDateChange(saleDate: Instant) {
+        _uiState.value = _uiState.value.copy(saleDate = Timestamp(Date.from(saleDate)))
     }
 
     fun onStateChange(state: State) {
@@ -103,10 +124,6 @@ class AnimalFormViewModel @Inject constructor(
 
     fun onWeightChange(weight: String) {
         _uiState.value = _uiState.value.copy(weight = weight)
-    }
-
-    fun onLotChange(lotId: String?) {
-        _uiState.value = _uiState.value.copy(lotId = lotId)
     }
 
     fun saveAnimal() {
@@ -134,13 +151,15 @@ class AnimalFormViewModel @Inject constructor(
             val animal = Animal(
                 id = currentState.id,
                 tag = currentState.tag,
-                gender = currentState.gender,
-                birthDate = currentState.birthDate,
+                nickname = currentState.nickname,
                 lotId = currentState.lotId,
+                gender = currentState.gender,
+                breed = currentState.breed,
+                birthDate = currentState.birthDate,
                 purchaseValue = purchaseValue,
-                purchaseDate = Timestamp.now(),
+                purchaseDate = currentState.purchaseDate,
                 saleValue = saleValue,
-                saleDate = Timestamp.now(),
+                saleDate = currentState.saleDate,
                 state = currentState.state
             )
 
@@ -178,11 +197,15 @@ class AnimalFormViewModel @Inject constructor(
 data class AnimalFormState(
     val id: String? = null,
     val tag: String = "",
+    val nickname: String? = null,
+    val lotId: String? = null,
     val gender: Gender = Gender.Male,
+    val breed: Breed = Breed.ZEBU,
     val birthDate: Timestamp = Timestamp.now(),
     val purchaseValue: String = "",
+    val purchaseDate: Timestamp = Timestamp.now(),
     val saleValue: String = "",
+    val saleDate: Timestamp = Timestamp.now(),
     val state: State = State.Healthy,
-    val lotId: String? = null,
     val weight: String = ""
 )

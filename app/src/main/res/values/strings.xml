@@ -79,4 +79,13 @@
     <string name="breed">Raza</string>
     <string name="profit">Ganancia</string>
     <string name="loss">Perdida</string>
+    <string name="zebu">Cebú</string>
+    <string name="brahman">Brahman</string>
+    <string name="romo">Romo</string>
+    <string name="gyr">Gyr</string>
+    <string name="jersey">Jersey</string>
+    <string name="holstein">Holstein</string>
+    <string name="bon">BON</string>
+    <string name="nickname">Apodo</string>
+    <string name="optional">Opcional</string>
 </resources>

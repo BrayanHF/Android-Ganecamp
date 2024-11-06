@@ -113,7 +113,7 @@ fun TopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int
+    selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int, icon: Int? = null
 ) {
     val datePickerState = rememberDatePickerState()
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
@@ -139,7 +139,8 @@ fun DatePickerField(
                 },
             trailingIcon = {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_calendar),
+                    painter = if (icon == null) painterResource(id = R.drawable.ic_calendar)
+                    else painterResource(id = icon),
                     contentDescription = stringResource(id = R.string.calendar),
                     modifier = Modifier.size(24.dp)
                 )
@@ -163,8 +164,7 @@ fun DatePickerField(
                 }
             }) {
                 DatePicker(
-                    state = datePickerState,
-                    colors = DatePickerDefaults.colors().copy(
+                    state = datePickerState, colors = DatePickerDefaults.colors().copy(
                         containerColor = White
                     )
                 )

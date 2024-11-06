@@ -6,6 +6,14 @@ import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Orange
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Yellow
+import com.ganecamp.utilities.enums.Breed
+import com.ganecamp.utilities.enums.Breed.BON
+import com.ganecamp.utilities.enums.Breed.BRAHMAN
+import com.ganecamp.utilities.enums.Breed.GYR
+import com.ganecamp.utilities.enums.Breed.HOLSTEIN
+import com.ganecamp.utilities.enums.Breed.JERSEY
+import com.ganecamp.utilities.enums.Breed.ROMO
+import com.ganecamp.utilities.enums.Breed.ZEBU
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
 import java.math.BigDecimal
@@ -53,4 +61,14 @@ fun getAnimalStateInfo(state: State): AnimalStateInfo {
         State.Dead -> AnimalStateInfo(R.string.dead, Red)
         State.Sold -> AnimalStateInfo(R.string.sold, LightGray)
     }
+}
+
+fun getBreedText(breed: Breed) = when (breed) {
+    ZEBU ->R.string.zebu
+    BRAHMAN -> R.string.brahman
+    ROMO -> R.string.romo
+    GYR -> R.string.gyr
+    JERSEY -> R.string.jersey
+    HOLSTEIN -> R.string.holstein
+    BON -> R.string.bon
 }

@@ -52,6 +52,7 @@ import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.formatNumber
+import com.ganecamp.ui.general.getBreedText
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.navigation.AnimalsNav
@@ -167,10 +168,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
 
 @Composable
 fun AnimalInfo(
-    navController: NavHostController,
-    animal: Animal,
-    age: Triple<Int, Int, Int>?,
-    approxSold: Float
+    navController: NavHostController, animal: Animal, age: Triple<Int, Int, Int>?, approxSold: Float
 ) {
     Card(
         modifier = Modifier
@@ -272,13 +270,13 @@ fun AnimalInfo(
             if (animal.state != State.Sold) {
                 titleRes2 = R.string.approximate_purchase_value
                 value2 = "$" + formatNumber(approxSold.toString())
-            } else{
+            } else {
                 val difference = animal.saleValue - animal.purchaseValue
 
                 value2 = "$" + formatNumber(difference.toString())
                 titleRes2 = if (difference > 0) {
                     R.string.profit
-                } else{
+                } else {
                     R.string.loss
                 }
             }
@@ -286,7 +284,7 @@ fun AnimalInfo(
             // Todo: Implement breed enum
             InfoRow(
                 titleRes = R.string.breed,
-                value = animal.breed,
+                value = stringResource(id = getBreedText(animal.breed)),
                 titleRes2 = titleRes2,
                 value2 = value2
             )

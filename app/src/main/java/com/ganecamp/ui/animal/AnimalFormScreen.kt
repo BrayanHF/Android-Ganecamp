@@ -47,16 +47,17 @@ import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.geAnimalGenderInfo
 import com.ganecamp.ui.general.getAnimalStateInfo
+import com.ganecamp.ui.general.getBreedText
 import com.ganecamp.ui.general.validateNumber
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.White
+import com.ganecamp.utilities.enums.Breed
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
-import java.time.Instant
 
 @Composable
 fun AnimalFormScreen(navController: NavController, animalId: String?, tag: String) {
@@ -106,34 +107,16 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            AnimalFormContent(state = state,
-                lots = lots,
-                onGenderChange = { viewModel.onGenderChange(it) },
-                onBirthDateChange = { viewModel.onBirthDateChange(it) },
-                onPurchaseValueChange = { viewModel.onPurchaseValueChange(it) },
-                onSaleValueChange = { viewModel.onSaleValueChange(it) },
-                onStateChange = { viewModel.onStateChange(it) },
-                onWeightChange = { viewModel.onWeightChange(it) },
-                onLotChange = { viewModel.onLotChange(it) },
-                onSaveClick = {
-                    viewModel.saveAnimal()
-                })
+            AnimalFormContent(
+                state = state, lots = lots, viewModel = viewModel
+            )
         }
     }
 }
 
 @Composable
 fun AnimalFormContent(
-    state: AnimalFormState,
-    lots: List<Lot>,
-    onGenderChange: (Gender) -> Unit,
-    onBirthDateChange: (Instant) -> Unit,
-    onPurchaseValueChange: (String) -> Unit,
-    onSaleValueChange: (String) -> Unit,
-    onStateChange: (State) -> Unit,
-    onWeightChange: (String) -> Unit,
-    onLotChange: (String?) -> Unit,
-    onSaveClick: () -> Unit
+    state: AnimalFormState, lots: List<Lot>, viewModel: AnimalFormViewModel
 ) {
     val errorMessages = ErrorMessages(
         moreThanOnePointError = stringResource(id = R.string.error_more_than_one_point),
@@ -147,22 +130,43 @@ fun AnimalFormContent(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        GenderDropdown(selectedGender = state.gender, onGenderChange = onGenderChange)
-        StateDropdown(selectedState = state.state, onStateChange = onStateChange)
+
+        OutlinedTextField(value = state.nickname ?: "",
+            onValueChange = { viewModel.onNicknameChange(it) },
+            label = { Text(stringResource(id = R.string.nickname) + " - " + stringResource(id = R.string.optional)) },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_nickname),
+                    contentDescription = stringResource(id = R.string.nickname),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        )
+
+        GenderDropdown(selectedGender = state.gender,
+            onGenderChange = { viewModel.onGenderChange(it) })
+
+        BreedDropdown(selectedBreed = state.breed, onBreedChange = { viewModel.onBreedChange(it) })
+
+        StateDropdown(selectedState = state.state, onStateChange = { viewModel.onStateChange(it) })
 
         DatePickerField(
             selectedDate = state.birthDate.toInstant(),
-            onDateChange = onBirthDateChange,
+            onDateChange = { viewModel.onBirthDateChange(it) },
             label = R.string.birth_date
         )
 
-        LotDropdown(lots = lots, selectedLot = state.lotId, onLotChange = onLotChange)
+        LotDropdown(
+            lots = lots,
+            selectedLot = state.lotId,
+            onLotChange = { viewModel.onLotChange(it) })
 
         val weightError = validateNumber(state.weight, errorMessages)
         if (state.id == null) {
             NumberTextField(value = state.weight,
                 onValueChange = {
-                    onWeightChange(it)
+                    viewModel.onWeightChange(it)
                 },
                 label = stringResource(id = R.string.weight),
                 isError = weightError != null,
@@ -176,10 +180,17 @@ fun AnimalFormContent(
                 })
         }
 
+        DatePickerField(
+            selectedDate = state.purchaseDate.toInstant(),
+            onDateChange = { viewModel.onPurchaseDateChange(it) },
+            label = R.string.purchase_date,
+            icon = R.drawable.ic_purchase_date
+        )
+
         val purchaseValueError = validateNumber(state.purchaseValue, errorMessages)
         NumberTextField(value = state.purchaseValue,
             onValueChange = {
-                onPurchaseValueChange(it)
+                viewModel.onPurchaseValueChange(it)
             },
             label = stringResource(id = R.string.purchase_value),
             isError = purchaseValueError != null,
@@ -195,9 +206,16 @@ fun AnimalFormContent(
 
         val saleValueError = validateNumber(state.saleValue, errorMessages)
         if (state.state == State.Sold) {
+            DatePickerField(
+                selectedDate = state.saleDate.toInstant(),
+                onDateChange = { viewModel.onSaleDateChange(it) },
+                label = R.string.sale_date,
+                icon = R.drawable.ic_sale_date
+            )
+
             NumberTextField(value = state.saleValue,
                 onValueChange = {
-                    onSaleValueChange(it)
+                    viewModel.onSaleValueChange(it)
                 },
                 label = stringResource(id = R.string.sale_value),
                 isError = saleValueError != null,
@@ -213,7 +231,7 @@ fun AnimalFormContent(
         }
 
         Button(
-            onClick = onSaveClick,
+            onClick = { viewModel.saveAnimal() },
             modifier = Modifier.align(Alignment.End),
             enabled = (state.id != null || weightError == null) && purchaseValueError == null && (state.state != State.Sold || saleValueError == null)
         ) {
@@ -263,6 +281,45 @@ fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
                         contentDescription = stringResource(id = itemInfo.textRes),
                         modifier = Modifier.size(24.dp)
                     )
+                })
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BreedDropdown(selectedBreed: Breed, onBreedChange: (Breed) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val breedText = getBreedText(selectedBreed)
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(value = stringResource(id = breedText),
+            onValueChange = {},
+            label = { Text(stringResource(id = R.string.breed)) },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_breed),
+                    contentDescription = stringResource(id = R.string.breed),
+                    modifier = Modifier.size(24.dp)
+                )
+            })
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        ) {
+            Breed.entries.forEach { breed ->
+                val itemText = getBreedText(breed)
+                DropdownMenuItem(onClick = {
+                    onBreedChange(breed)
+                    expanded = false
+                }, text = {
+                    Text(stringResource(id = itemText))
                 })
             }
         }
