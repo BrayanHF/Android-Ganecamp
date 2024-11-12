@@ -44,7 +44,7 @@ class AnimalFormViewModel @Inject constructor(
     fun loadAnimal(animalId: String) {
         viewModelScope.launch {
             val animalResponse = animalService.getAnimalById(animalId)
-            if (animalResponse.second != FirestoreRespond.OK) {
+            if (animalResponse.second == FirestoreRespond.OK) {
                 animalResponse.first?.let { animal ->
                     _uiState.value = AnimalFormState(
                         id = animal.id,
@@ -126,27 +126,23 @@ class AnimalFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weight = weight)
     }
 
+    private fun convertToDouble(numString: String): Double {
+        return try {
+            numString.toDouble()
+        } catch (e: NumberFormatException) {
+            0.0
+        }
+    }
+
     fun saveAnimal() {
         viewModelScope.launch {
             val currentState = _uiState.value
 
-            val weight: Float = try {
-                currentState.weight.toFloat()
-            } catch (e: Exception) {
-                0f
-            }
+            val weight: Float = convertToDouble(currentState.weight).toFloat()
 
-            val purchaseValue: Double = try {
-                currentState.purchaseValue.toDouble()
-            } catch (e: Exception) {
-                0.0
-            }
+            val purchaseValue: Double = convertToDouble(currentState.purchaseValue)
 
-            val saleValue: Double = try {
-                currentState.saleValue.toDouble()
-            } catch (e: Exception) {
-                0.0
-            }
+            val saleValue: Double = convertToDouble(currentState.saleValue)
 
             val animal = Animal(
                 id = currentState.id,

@@ -109,11 +109,13 @@ fun TopBar(
     )
 }
 
-//Todo: Fix the format of the date picker and the change the colors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int, icon: Int? = null
+    selectedDate: Instant,
+    onDateChange: (Instant) -> Unit,
+    label: Int,
+    icon: Int? = null
 ) {
     val datePickerState = rememberDatePickerState()
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
@@ -164,10 +166,12 @@ fun DatePickerField(
                 }
             }) {
                 DatePicker(
-                    state = datePickerState, colors = DatePickerDefaults.colors().copy(
+                    state = datePickerState,
+                    colors = DatePickerDefaults.colors().copy(
                         containerColor = White
+                    ),
+
                     )
-                )
             }
         }
     }

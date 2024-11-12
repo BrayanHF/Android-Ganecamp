@@ -216,7 +216,7 @@ fun AnimalInfo(
                 OutlinedButton(
                     onClick = {
                         navController.navigate(
-                            AnimalFormNav(animal.id!!, animal.tag)
+                            AnimalFormNav(animal.id, animal.tag)
                         )
                     },
                     shape = RoundedCornerShape(50),
@@ -281,7 +281,6 @@ fun AnimalInfo(
                 }
             }
 
-            // Todo: Implement breed enum
             InfoRow(
                 titleRes = R.string.breed,
                 value = stringResource(id = getBreedText(animal.breed)),
