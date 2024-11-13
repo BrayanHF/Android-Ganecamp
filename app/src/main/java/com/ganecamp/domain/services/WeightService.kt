@@ -1,7 +1,7 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.WeightDao
-import com.ganecamp.model.objects.Weight
+import com.ganecamp.data.firibase.model.Weight
 import javax.inject.Inject
 import javax.inject.Singleton
 

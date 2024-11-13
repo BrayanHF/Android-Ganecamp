@@ -1,10 +1,10 @@
-package com.ganecamp.model.objects
+package com.ganecamp.data.firibase.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Exclude
 
-data class Weight(
+data class AnimalVaccine(
     @get:Exclude @set:Exclude var id: String? = null,
-    val weight: Float = 0f,
+    val vaccineId: String = "",
     val date: Timestamp = Timestamp.now()
 )

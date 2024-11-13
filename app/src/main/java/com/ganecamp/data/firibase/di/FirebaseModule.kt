@@ -1,4 +1,4 @@
-package com.ganecamp.di
+package com.ganecamp.data.firibase.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

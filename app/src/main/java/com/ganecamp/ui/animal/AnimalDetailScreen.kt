@@ -43,24 +43,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.model.objects.EventApplied
-import com.ganecamp.model.objects.VaccineApplied
-import com.ganecamp.model.objects.Weight
-import com.ganecamp.ui.general.BarColor
+import com.ganecamp.data.firibase.model.Animal
+import com.ganecamp.data.firibase.model.EventApplied
+import com.ganecamp.data.firibase.model.VaccineApplied
+import com.ganecamp.data.firibase.model.Weight
+import com.ganecamp.ui.general.GeneralTopBar
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.ShowFirestoreError
-import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.formatNumber
 import com.ganecamp.ui.general.getBreedText
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.navigation.AnimalsNav
 import com.ganecamp.ui.navigation.LotDetailNav
+import com.ganecamp.ui.navigation.VaccineAddFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGray
-import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
@@ -72,7 +71,7 @@ val formater: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
 
 @Composable
-fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
+fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState(initial = true)
     val animal: Animal? by viewModel.animal.collectAsState()
@@ -83,18 +82,12 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     val weightValue by viewModel.weightValue.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    BarColor(LightGreen)
-
     LaunchedEffect(animalId) {
-        if (animalId != null) {
-            viewModel.loadAnimal(animalId)
-            viewModel.loadVaccines(animalId)
-            viewModel.loadEvents(animalId)
-            viewModel.loadWeights(animalId)
-            viewModel.loadWeightValue()
-        } else {
-            navController.popBackStack()
-        }
+        viewModel.loadAnimal(animalId)
+        viewModel.loadVaccines(animalId)
+        viewModel.loadEvents(animalId)
+        viewModel.loadWeights(animalId)
+        viewModel.loadWeightValue()
     }
 
     var showError by remember { mutableStateOf(false) }
@@ -109,7 +102,7 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
     }
 
     Scaffold(topBar = {
-        TopBar(title = stringResource(id = R.string.animal_detail),
+        GeneralTopBar(title = stringResource(id = R.string.animal_detail),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
         if (isLoading) {
@@ -135,7 +128,11 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String?) {
                     items = vaccines,
                     cardContent = { VaccineCard(it) },
                     addActionTextRes = R.string.add_vaccine,
-                    onClickAdd = { /*Todo: All the vaccines screen and here the navigation*/ })
+                    onClickAdd = {
+                        animal?.id?.let { animalId ->
+                            navController.navigate(VaccineAddFormNav(animalId))
+                        }
+                    })
                 SectionWithLazyRow(titleRes = R.string.events,
                     items = events,
                     cardContent = { EventCard(it) },

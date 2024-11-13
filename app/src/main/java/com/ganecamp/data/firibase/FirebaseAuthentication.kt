@@ -3,7 +3,7 @@ package com.ganecamp.data.firibase
 import android.util.Log
 import com.ganecamp.data.firibase.dao.FarmDao
 import com.ganecamp.data.firibase.dao.GanecampUserDao
-import com.ganecamp.model.objects.GanecampUser
+import com.ganecamp.data.firibase.model.GanecampUser
 import com.ganecamp.utilities.enums.AuthRespond
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.AuthErrorEvaluator

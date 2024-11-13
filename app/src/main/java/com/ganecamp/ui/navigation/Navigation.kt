@@ -13,6 +13,7 @@ import androidx.navigation.toRoute
 import com.ganecamp.ui.animal.AnimalDetailScreen
 import com.ganecamp.ui.animal.AnimalFormScreen
 import com.ganecamp.ui.animal.AnimalScreen
+import com.ganecamp.ui.animal.vaccine.VaccineAddFormScreen
 import com.ganecamp.ui.auth.LoginScreen
 import com.ganecamp.ui.auth.RegisterScreen
 import com.ganecamp.ui.auth.SplashScreen
@@ -58,6 +59,10 @@ fun Navigation() {
             composable<LotFormNav> { backStackEntry ->
                 val lotFormNav = backStackEntry.toRoute<LotFormNav>()
                 LotFormScreen(navController, lotFormNav.lotId)
+            }
+            composable<VaccineAddFormNav> { backStackEntry ->
+                val vaccineAddFormNav = backStackEntry.toRoute<VaccineAddFormNav>()
+                VaccineAddFormScreen(navController, vaccineAddFormNav.animalId)
             }
         }
     }

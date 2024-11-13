@@ -1,6 +1,6 @@
 package com.ganecamp.data.firibase
 
-import com.ganecamp.model.objects.Farm
+import com.ganecamp.data.firibase.model.Farm
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.domain.services.FarmService
 import com.ganecamp.domain.services.GanecampUserService
-import com.ganecamp.model.objects.Farm
+import com.ganecamp.data.firibase.model.Farm
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -88,4 +88,10 @@
     <string name="bon">BON</string>
     <string name="nickname">Apodo</string>
     <string name="optional">Opcional</string>
+    <string name="new_vaccine">Nueva Vacuna</string>
+    <string name="old_vaccine">Vacuna ya agregada</string>
+    <string name="vaccine_name">Nombre Vacuna</string>
+    <string name="vaccine_description">Descripción de la vacuna</string>
+    <string name="look_for_vaccine">Buscar Vacuna</string>
+    <string name="application_date">Fecha de aplicación</string>
 </resources>

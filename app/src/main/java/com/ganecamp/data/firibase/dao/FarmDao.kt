@@ -2,7 +2,7 @@ package com.ganecamp.data.firibase.dao
 
 import android.util.Log
 import com.ganecamp.data.firibase.FirestoreCollections
-import com.ganecamp.model.objects.Farm
+import com.ganecamp.data.firibase.model.Farm
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
 import com.google.firebase.firestore.FirebaseFirestore

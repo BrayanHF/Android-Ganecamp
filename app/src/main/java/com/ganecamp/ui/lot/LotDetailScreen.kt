@@ -39,15 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.model.objects.EventApplied
-import com.ganecamp.model.objects.Lot
-import com.ganecamp.ui.general.BarColor
+import com.ganecamp.data.firibase.model.Animal
+import com.ganecamp.data.firibase.model.EventApplied
+import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.LotFormNav
 import com.ganecamp.ui.theme.LightBlue
-import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.utilities.enums.FirestoreRespond
@@ -63,8 +61,6 @@ fun LotDetailScreen(navController: NavController, lotId: String?) {
     val events: List<EventApplied> by viewModel.events.collectAsState()
     val animals: List<Animal> by viewModel.animals.collectAsState()
     val error by viewModel.error.collectAsState()
-
-    BarColor(LightGreen)
 
     LaunchedEffect(lotId) {
         if (lotId != null) {

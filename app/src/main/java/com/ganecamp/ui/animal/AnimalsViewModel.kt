@@ -3,7 +3,7 @@ package com.ganecamp.ui.animal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ganecamp.domain.services.AnimalService
-import com.ganecamp.model.objects.Animal
+import com.ganecamp.data.firibase.model.Animal
 import com.ganecamp.utilities.enums.FirestoreRespond
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

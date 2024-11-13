@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ganecamp.domain.services.EventAppliedService
 import com.ganecamp.domain.services.LotService
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.model.objects.EventApplied
-import com.ganecamp.model.objects.Lot
+import com.ganecamp.data.firibase.model.Animal
+import com.ganecamp.data.firibase.model.EventApplied
+import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.utilities.enums.EntityType
 import com.ganecamp.utilities.enums.FirestoreRespond
 import dagger.hilt.android.lifecycle.HiltViewModel

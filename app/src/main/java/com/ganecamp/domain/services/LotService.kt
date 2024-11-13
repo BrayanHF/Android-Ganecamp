@@ -1,7 +1,7 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.LotDao
-import com.ganecamp.model.objects.Lot
+import com.ganecamp.data.firibase.model.Lot
 import javax.inject.Inject
 import javax.inject.Singleton
 

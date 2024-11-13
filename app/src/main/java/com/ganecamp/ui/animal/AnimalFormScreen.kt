@@ -38,13 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.model.objects.Lot
-import com.ganecamp.ui.general.BarColor
+import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.general.ErrorMessages
+import com.ganecamp.ui.general.GeneralTopBar
 import com.ganecamp.ui.general.NumberTextField
 import com.ganecamp.ui.general.ShowFirestoreError
-import com.ganecamp.ui.general.TopBar
 import com.ganecamp.ui.general.geAnimalGenderInfo
 import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.general.getBreedText
@@ -53,7 +52,6 @@ import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.Red
-import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.Breed
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
@@ -67,8 +65,6 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
     val animalSaved by viewModel.animalSaved.collectAsState(initial = false)
     val error by viewModel.error.collectAsState(initial = FirestoreRespond.OK)
 
-    BarColor(White)
-
     LaunchedEffect(animalId) {
         viewModel.loadLots()
         viewModel.loadTag(tag)
@@ -79,7 +75,7 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
 
     LaunchedEffect(animalSaved) {
         if (animalSaved) {
-            navController.navigate(AnimalDetailNav(state.id)) {
+            navController.navigate(AnimalDetailNav(state.id!!)) {
                 popUpTo(AnimalFormNav(state.id, state.tag)) { inclusive = true }
                 launchSingleTop = true
             }
@@ -98,7 +94,7 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
     }
 
     Scaffold(topBar = {
-        TopBar(title = if (animalId == null) stringResource(id = R.string.new_animal)
+        GeneralTopBar(title = if (animalId == null) stringResource(id = R.string.new_animal)
         else stringResource(id = R.string.edit_animal),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
@@ -141,8 +137,7 @@ fun AnimalFormContent(
                     contentDescription = stringResource(id = R.string.nickname),
                     modifier = Modifier.size(24.dp)
                 )
-            }
-        )
+            })
 
         GenderDropdown(selectedGender = state.gender,
             onGenderChange = { viewModel.onGenderChange(it) })
@@ -247,8 +242,7 @@ fun GenderDropdown(selectedGender: Gender, onGenderChange: (Gender) -> Unit) {
     val genderInfo = geAnimalGenderInfo(selectedGender)
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(
-            value = stringResource(id = genderInfo.textRes),
+        OutlinedTextField(value = stringResource(id = genderInfo.textRes),
             trailingIcon = {
                 Image(
                     painter = painterResource(id = genderInfo.iconRes),

@@ -5,7 +5,6 @@ object FirestoreCollections {
     const val ANIMAL_COLLECTION = "animals"
     const val LOT_COLLECTION = "lots"
     const val USER_COLLECTION = "users"
-    const val GENERAL_VACCINE_COLLECTION = "vaccines"
     const val FARM_VACCINE_COLLECTION = "farm_vaccines"
     const val GENERAL_EVENT_COLLECTION = "events"
     const val FARM_EVENT_COLLECTION = "farm_events"

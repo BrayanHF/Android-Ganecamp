@@ -1,7 +1,7 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.VaccineAppliedDao
-import com.ganecamp.model.objects.AnimalVaccine
+import com.ganecamp.data.firibase.model.AnimalVaccine
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -4,8 +4,8 @@ import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.data.firibase.model.Vaccine
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.model.objects.Vaccine
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
@@ -21,9 +21,6 @@ class VaccineDao @Inject constructor(
     private val farmSessionManager: FarmSessionManager,
     private val networkStatusHelper: NetworkStatusHelper
 ) {
-
-    private val generalVaccineCollectionReference =
-        db.collection(FirestoreCollections.GENERAL_VACCINE_COLLECTION)
 
     private fun getFarmVaccineCollectionReference(): CollectionReference? {
         val farm = farmSessionManager.getFarm()
@@ -44,14 +41,6 @@ class VaccineDao @Inject constructor(
             val farmVaccineCollection =
                 farmVaccineCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
             farmVaccineCollection.forEach { document ->
-                val vaccine = document.toObject<Vaccine>()
-                vaccine.id = document.id
-                vaccines.add(vaccine)
-            }
-
-            val generalVaccineCollection =
-                generalVaccineCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
-            generalVaccineCollection.forEach { document ->
                 val vaccine = document.toObject<Vaccine>()
                 vaccine.id = document.id
                 vaccines.add(vaccine)
@@ -78,14 +67,6 @@ class VaccineDao @Inject constructor(
                     vaccine.id = farmVaccineDocument.id
                     return Pair(vaccine, FirestoreRespond.OK)
                 }
-            } else {
-                val generalVaccineDocument = generalVaccineCollectionReference.document(id)
-                    .get(networkStatusHelper.getSourceFrom()).await()
-                vaccine = generalVaccineDocument.toObject<Vaccine>()
-                if (vaccine != null) {
-                    vaccine.id = generalVaccineDocument.id
-                    return Pair(vaccine, FirestoreRespond.OK)
-                }
             }
             Pair(null, FirestoreRespond.NOT_FOUND)
         } catch (e: Exception) {
@@ -94,15 +75,17 @@ class VaccineDao @Inject constructor(
         }
     }
 
-    suspend fun createVaccine(vaccine: Vaccine): FirestoreRespond {
-        val farmVaccineCollectionReference =
-            getFarmVaccineCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+    suspend fun createVaccine(vaccine: Vaccine): Pair<String?, FirestoreRespond> {
+        val farmVaccineCollectionReference = getFarmVaccineCollectionReference() ?: return Pair(
+            null,
+            FirestoreRespond.NO_FARM_SESSION
+        )
         return try {
-            farmVaccineCollectionReference.add(vaccine).await()
-            FirestoreRespond.OK
+            val documentReference = farmVaccineCollectionReference.add(vaccine).await()
+            Pair(documentReference.id, FirestoreRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createVaccine: ${e.message}")
-            FirestoreErrorEvaluator.evaluateError(e)
+            Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 

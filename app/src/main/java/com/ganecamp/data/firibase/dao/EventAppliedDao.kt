@@ -5,8 +5,8 @@ import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.model.objects.EntityEvent
-import com.ganecamp.model.objects.EventApplied
+import com.ganecamp.data.firibase.model.EntityEvent
+import com.ganecamp.data.firibase.model.EventApplied
 import com.ganecamp.utilities.enums.EntityType
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator

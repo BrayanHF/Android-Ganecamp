@@ -39,14 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.ui.general.BarColor
+import com.ganecamp.data.firibase.model.Animal
 import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.navigation.AnimalDetailNav
-import com.ganecamp.ui.theme.White
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 
@@ -56,8 +54,6 @@ fun AnimalScreen(navController: NavHostController) {
     val animals by viewModel.animals.collectAsState(emptyList())
     val isLoading by viewModel.isLoading.collectAsState(true)
     val error by viewModel.error.collectAsState(FirestoreRespond.OK)
-
-    BarColor(White)
 
     LaunchedEffect(Unit) {
         viewModel.loadAnimals()

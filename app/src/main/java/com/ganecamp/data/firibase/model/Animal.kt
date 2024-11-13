@@ -1,4 +1,4 @@
-package com.ganecamp.model.objects
+package com.ganecamp.data.firibase.model
 
 import com.ganecamp.utilities.enums.Breed
 import com.ganecamp.utilities.enums.Gender

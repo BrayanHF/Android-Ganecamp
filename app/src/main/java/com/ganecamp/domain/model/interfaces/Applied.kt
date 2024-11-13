@@ -1,4 +1,4 @@
-package com.ganecamp.model.interfaces
+package com.ganecamp.domain.model.interfaces
 
 import com.google.firebase.Timestamp
 

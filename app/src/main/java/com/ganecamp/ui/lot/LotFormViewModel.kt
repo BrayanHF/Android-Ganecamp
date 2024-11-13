@@ -3,7 +3,7 @@ package com.ganecamp.ui.lot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ganecamp.domain.services.LotService
-import com.ganecamp.model.objects.Lot
+import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel

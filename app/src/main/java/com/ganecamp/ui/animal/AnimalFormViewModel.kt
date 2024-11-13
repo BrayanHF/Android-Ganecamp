@@ -2,12 +2,12 @@ package com.ganecamp.ui.animal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ganecamp.data.firibase.model.Animal
+import com.ganecamp.data.firibase.model.Lot
+import com.ganecamp.data.firibase.model.Weight
 import com.ganecamp.domain.services.AnimalService
 import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.services.WeightService
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.model.objects.Lot
-import com.ganecamp.model.objects.Weight
 import com.ganecamp.ui.general.formatNumber
 import com.ganecamp.utilities.enums.Breed
 import com.ganecamp.utilities.enums.FirestoreRespond
@@ -70,7 +70,7 @@ class AnimalFormViewModel @Inject constructor(
     fun loadLots() {
         viewModelScope.launch {
             val lotResponse = lotService.getAllLots()
-            if (lotResponse.second != FirestoreRespond.OK) {
+            if (lotResponse.second == FirestoreRespond.OK) {
                 _lots.value = lotResponse.first
             } else {
                 _error.value = lotResponse.second

@@ -1,7 +1,7 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.GanecampUserDao
-import com.ganecamp.model.objects.GanecampUser
+import com.ganecamp.data.firibase.model.GanecampUser
 import javax.inject.Inject
 import javax.inject.Singleton
 

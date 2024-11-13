@@ -27,11 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.ui.general.BarColor
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
-import com.ganecamp.ui.theme.White
 
 @Composable
 fun ScanScreen(navController: NavController) {
@@ -42,8 +40,6 @@ fun ScanScreen(navController: NavController) {
     val error by viewModel.error.collectAsState()
 
     val rfidText = remember { mutableStateOf("") }
-
-    BarColor(White)
 
     LaunchedEffect(animalId) {
         if (animalId != null) {
@@ -61,8 +57,7 @@ fun ScanScreen(navController: NavController) {
             text = stringResource(id = R.string.scan_rfid),
             style = MaterialTheme.typography.bodySmall
         )
-        OutlinedTextField(
-            value = rfidText.value,
+        OutlinedTextField(value = rfidText.value,
             onValueChange = { tagValue ->
                 rfidText.value = tagValue
             },
@@ -79,8 +74,7 @@ fun ScanScreen(navController: NavController) {
                     contentDescription = stringResource(id = R.string.tag_rfid),
                     modifier = Modifier.size(24.dp)
                 )
-            }
-        )
+            })
     }
 
     if (showErrorDialog) {
@@ -104,7 +98,6 @@ fun ScanScreen(navController: NavController) {
                 TextButton(onClick = { viewModel.closeConfirmDialog() }) {
                     Text(stringResource(id = R.string.cancel))
                 }
-            }
-        )
+            })
     }
 }

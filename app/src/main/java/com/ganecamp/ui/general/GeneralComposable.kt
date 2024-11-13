@@ -36,6 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ganecamp.R
 import com.ganecamp.ui.theme.Black
 import com.ganecamp.ui.theme.Green
@@ -86,9 +88,15 @@ fun NoRegistered(textId: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(
+fun GeneralTopBar(
     title: String, onBackClick: () -> Unit, content: @Composable RowScope.() -> Unit = {}
 ) {
+    val networkStatusHelper: NetworkStatusHelperViewModel = hiltViewModel()
+    val isConnectedNetwork by networkStatusHelper.isConnectedNetwork.collectAsState()
+
+    val colorBar = if (isConnectedNetwork) LightGreen else White
+    BarColor(colorBar)
+
     TopAppBar(
         title = { Text(text = title, style = Typography.titleSmall) },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -112,10 +120,7 @@ fun TopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    selectedDate: Instant,
-    onDateChange: (Instant) -> Unit,
-    label: Int,
-    icon: Int? = null
+    selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int, icon: Int? = null
 ) {
     val datePickerState = rememberDatePickerState()
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))

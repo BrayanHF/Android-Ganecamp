@@ -4,9 +4,9 @@ import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
+import com.ganecamp.data.firibase.model.AnimalVaccine
+import com.ganecamp.data.firibase.model.VaccineApplied
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.model.objects.AnimalVaccine
-import com.ganecamp.model.objects.VaccineApplied
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference

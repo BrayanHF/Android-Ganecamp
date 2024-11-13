@@ -6,11 +6,11 @@ import com.ganecamp.domain.services.AnimalService
 import com.ganecamp.domain.services.EventAppliedService
 import com.ganecamp.domain.services.VaccineAppliedService
 import com.ganecamp.domain.services.WeightService
-import com.ganecamp.model.objects.Animal
-import com.ganecamp.model.objects.EventApplied
-import com.ganecamp.model.objects.VaccineApplied
-import com.ganecamp.model.objects.Weight
-import com.ganecamp.model.objects.WeightValue
+import com.ganecamp.data.firibase.model.Animal
+import com.ganecamp.data.firibase.model.EventApplied
+import com.ganecamp.data.firibase.model.VaccineApplied
+import com.ganecamp.data.firibase.model.Weight
+import com.ganecamp.data.firibase.model.WeightValue
 import com.ganecamp.utilities.enums.EntityType
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.firebase.Timestamp

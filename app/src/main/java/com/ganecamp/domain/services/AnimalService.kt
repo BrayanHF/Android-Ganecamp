@@ -1,7 +1,7 @@
 package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.AnimalDao
-import com.ganecamp.model.objects.Animal
+import com.ganecamp.data.firibase.model.Animal
 import com.google.firebase.Timestamp
 import java.time.Period
 import java.time.ZonedDateTime
