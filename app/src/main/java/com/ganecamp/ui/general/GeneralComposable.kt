@@ -1,5 +1,6 @@
 package com.ganecamp.ui.general
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -29,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,6 +53,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ganecamp.R
@@ -58,6 +62,7 @@ import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
+import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.time.Instant
@@ -334,4 +339,37 @@ fun BarColor(color: Color) {
     systemUiController.setStatusBarColor(
         color = color, darkIcons = true
     )
+}
+
+@Composable
+fun ToggleButtons(
+    txtFirstButton: String, txtSecondButton: String, onSelectionChange: (Boolean) -> Unit
+) {
+    val isFirstSelected = remember { mutableStateOf(true) }
+    val options = listOf(txtFirstButton, txtSecondButton)
+
+    Row(
+        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        options.forEach { option ->
+            val isSelected =
+                (option == txtFirstButton && isFirstSelected.value) || (option == txtSecondButton && !isFirstSelected.value)
+
+            OutlinedButton(
+                onClick = {
+                    isFirstSelected.value = option == txtFirstButton
+                    onSelectionChange(isFirstSelected.value)
+                }, colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = if (isSelected) Black else Yellow,
+                    containerColor = if (isSelected) Yellow else Color.Transparent
+                ), border = BorderStroke(
+                    width = 1.0.dp, color = Yellow
+                ), modifier = Modifier.weight(1f).padding(8.dp)
+            ) {
+                Text(
+                    text = option, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
 }

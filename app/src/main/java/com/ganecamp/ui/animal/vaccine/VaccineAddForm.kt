@@ -1,11 +1,9 @@
 package com.ganecamp.ui.animal.vaccine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +38,7 @@ import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Vaccine
 import com.ganecamp.ui.general.DatePickerField
 import com.ganecamp.ui.general.GeneralTopBar
+import com.ganecamp.ui.general.ToggleButtons
 import com.ganecamp.utilities.enums.FirestoreRespond
 
 @Composable
@@ -93,11 +91,9 @@ fun VaccineFormContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (vaccines.isNotEmpty()) {
-            RadioGroupTwoOptions(textFirst = stringResource(id = R.string.new_vaccine),
-                textSecond = stringResource(id = R.string.old_vaccine),
-                onValueChange = {
-                    viewModel.onIsNewChange(it)
-                })
+            ToggleButtons(txtFirstButton = stringResource(id = R.string.new_vaccine),
+                txtSecondButton = stringResource(id = R.string.old_vaccine),
+                onSelectionChange = { viewModel.onIsNewChange(it) })
         }
         if (state.isNew) {
             OutlinedTextField(value = state.name,
@@ -143,7 +139,6 @@ fun VaccineDropdown(
     var expanded by remember { mutableStateOf(false) }
     var nameForSearch by remember { mutableStateOf("") }
 
-
     val filteredVaccines = remember(nameForSearch) {
         if (nameForSearch.isEmpty()) vaccines else vaccines.filter {
             it.name.contains(nameForSearch, ignoreCase = true)
@@ -182,38 +177,6 @@ fun VaccineDropdown(
                     nameForSearch = vaccine.name
                     expanded = false
                 }, text = { Text(vaccine.name) })
-            }
-        }
-    }
-}
-
-
-@Composable
-fun RadioGroupTwoOptions(textFirst: String, textSecond: String, onValueChange: (Boolean) -> Unit) {
-    val options = listOf(textFirst, textSecond)
-    val selectedOption = remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        options.forEach { option ->
-            Row(verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable {
-                        selectedOption.value = option == textFirst
-                        onValueChange(selectedOption.value)
-                    }
-                    .padding(8.dp)) {
-                RadioButton(selected = (option == textFirst && selectedOption.value) || (option == textSecond && !selectedOption.value),
-                    onClick = {
-                        selectedOption.value = option == textFirst
-                        onValueChange(selectedOption.value)
-                    })
-                Text(
-                    text = if (option == textFirst) textFirst else textSecond,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
             }
         }
     }
