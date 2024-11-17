@@ -100,4 +100,9 @@
     <string name="event_description">Descripción del evento</string>
     <string name="look_for_event">Buscar evento</string>
     <string name="weight_date">Fecha de peso</string>
+    <string name="tag">TAG</string>
+    <string name="name">Nombre</string>
+    <string name="animal_count">Conteo de animales</string>
+    <string name="not_sold">No vendido</string>
+    <string name="purchased_animals">Animales comprados</string>
 </resources>

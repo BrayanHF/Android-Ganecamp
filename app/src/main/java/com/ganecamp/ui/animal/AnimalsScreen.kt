@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,6 +43,7 @@ import com.ganecamp.ui.general.IsLoading
 import com.ganecamp.ui.general.NoRegistered
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.getAnimalStateInfo
+import com.ganecamp.ui.general.getBreedText
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
@@ -101,7 +101,6 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
     }
 }
 
-//Todo: Add breed and think in new design for searches
 @Composable
 fun AnimalCard(navController: NavHostController, animal: Animal) {
     val genderIcon: Int = if (animal.gender == Gender.Male) {
@@ -119,17 +118,29 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
-        Column {
-            Text(
-                text = animal.tag,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(8.dp)
-            )
-            animal.nickname?.let {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                animal.nickname?.let { nickname ->
+                    Text(
+                        text = nickname,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(8.dp,8.dp, 8.dp, 0.dp)
+                    )
+                }
                 Text(
-                    text = it,
+                    text = stringResource(id = R.string.tag) + ": ${animal.tag}",
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(8.dp,8.dp, 8.dp, 0.dp)
+                )
+            }
+            if (animal.lotId != null) {
+                Text(
+                    text = stringResource(id = R.string.lot) + ": ${animal.lotId}",
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
@@ -146,15 +157,13 @@ fun AnimalCard(navController: NavHostController, animal: Animal) {
                 modifier = Modifier.size(40.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = "TAG: ${animal.tag}", style = MaterialTheme.typography.titleSmall)
-                if (animal.lotId != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(id = R.string.lot) + " ${animal.lotId}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            Column(
+                modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = getBreedText(animal.breed)),
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Box(

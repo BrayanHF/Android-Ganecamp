@@ -342,6 +342,7 @@ fun BarColor(color: Color) {
     )
 }
 
+// Todo: Independents buttons
 @Composable
 fun ToggleButtons(
     txtFirstButton: String, txtSecondButton: String, onSelectionChange: (Boolean) -> Unit

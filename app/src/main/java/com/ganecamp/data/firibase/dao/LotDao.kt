@@ -4,9 +4,9 @@ import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
-import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.data.firibase.model.Animal
 import com.ganecamp.data.firibase.model.Lot
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
@@ -39,7 +39,8 @@ class LotDao @Inject constructor(
 
         return try {
             val lots = mutableListOf<Lot>()
-            val lotsCollection = lotCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
+            val lotsCollection =
+                lotCollectionReference.get(networkStatusHelper.getSourceFrom()).await()
             lotsCollection.forEach { document ->
                 val lot = document.toObject<Lot>()
                 lot.id = document.id
@@ -63,7 +64,8 @@ class LotDao @Inject constructor(
                 db.collection(FirestoreCollections.FARM_COLLECTION).document(farmId)
                     .collection(FirestoreCollections.ANIMAL_COLLECTION)
 
-            val querySnapshot = animalCollectionReference.whereEqualTo("lotId", lotId).get(networkStatusHelper.getSourceFrom()).await()
+            val querySnapshot = animalCollectionReference.whereEqualTo("lotId", lotId)
+                .get(networkStatusHelper.getSourceFrom()).await()
             querySnapshot?.documents?.forEach { document ->
                 val animal = document.toObject<Animal>()
                 animal?.let {
@@ -85,7 +87,8 @@ class LotDao @Inject constructor(
             getLotCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
 
         return try {
-            val documentSnapshot = lotCollectionReference.document(id).get(networkStatusHelper.getSourceFrom()).await()
+            val documentSnapshot =
+                lotCollectionReference.document(id).get(networkStatusHelper.getSourceFrom()).await()
             val lot = documentSnapshot.toObject<Lot>()
             lot?.let {
                 lot.id = documentSnapshot.id
@@ -98,15 +101,15 @@ class LotDao @Inject constructor(
         }
     }
 
-    suspend fun createLot(lot: Lot): FirestoreRespond {
+    suspend fun createLot(lot: Lot): Pair<String?, FirestoreRespond> {
         val lotCollectionReference =
-            getLotCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getLotCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
         return try {
-            lotCollectionReference.add(lot).await()
-            FirestoreRespond.OK
+            val documentReference = lotCollectionReference.add(lot).await()
+            Pair(documentReference.id, FirestoreRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createLot: ${e.message}")
-            FirestoreErrorEvaluator.evaluateError(e)
+            Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 

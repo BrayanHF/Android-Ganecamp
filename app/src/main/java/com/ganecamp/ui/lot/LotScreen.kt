@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -49,7 +48,6 @@ import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.utilities.enums.FirestoreRespond
 
-//Todo: Maybe change whole design and change the add bottom
 @Composable
 fun LotScreen(navController: NavController) {
     val viewModel: LotViewModel = hiltViewModel()
@@ -125,46 +123,49 @@ fun LotList(navController: NavController, lots: List<Lot>) {
     }
 }
 
+
+//Todo: Think in a better design for this card
 @Composable
 fun LotCard(navController: NavController, lot: Lot) {
     Card(
         onClick = { navController.navigate(LotDetailNav(lot.id!!)) },
-        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Center,
         ) {
-            Column(Modifier.padding(8.dp)) {
-                Text(
-                    text = "ID: ${lot.id}",
-                    style = Typography.titleMedium,
-                )
-                Text(
-                    text = stringResource(id = R.string.animals) + ": ${lot.numberAnimals}",
-                    style = Typography.bodyMedium,
-                )
-            } // Todo: This box needs dynamic color and text based on the status of the sold lot
+            Text(
+                text = lot.name,
+                style = Typography.titleMedium,
+            )
+            Text(
+                text = stringResource(id = R.string.animal_count) + ": ${lot.animalCount}",
+                style = Typography.bodyMedium,
+            )
+            val (colorState, textState) = if (lot.sold) {
+                Pair(LightGray, R.string.sold)
+            } else {
+                Pair(Color.Green, R.string.not_sold)
+            }
             Box(
                 modifier = Modifier
                     .background(
-                        color = LightGray.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)
+                        color = colorState.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.sold),
+                    text = stringResource(id = textState),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = LightGray,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
