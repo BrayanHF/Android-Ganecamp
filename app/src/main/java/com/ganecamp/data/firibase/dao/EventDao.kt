@@ -4,8 +4,8 @@ import android.util.Log
 import com.ganecamp.data.firibase.FarmSessionManager
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
-import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.data.firibase.model.Event
+import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
@@ -94,16 +94,16 @@ class EventDao @Inject constructor(
         }
     }
 
-    suspend fun createEvent(event: Event): FirestoreRespond {
+    suspend fun createEvent(event: Event): Pair<String?, FirestoreRespond> {
         val eventCollectionReference =
-            getEventCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getEventCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
 
         return try {
-            eventCollectionReference.add(event).await()
-            FirestoreRespond.OK
+            val documentReference = eventCollectionReference.add(event).await()
+            Pair(documentReference.id, FirestoreRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createEvent: ${e.message}")
-            FirestoreErrorEvaluator.evaluateError(e)
+            Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 

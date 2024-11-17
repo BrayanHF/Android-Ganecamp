@@ -17,6 +17,7 @@ import com.ganecamp.ui.animal.vaccine.VaccineAddFormScreen
 import com.ganecamp.ui.auth.LoginScreen
 import com.ganecamp.ui.auth.RegisterScreen
 import com.ganecamp.ui.auth.SplashScreen
+import com.ganecamp.ui.event.EventAddFormScreen
 import com.ganecamp.ui.lot.LotDetailScreen
 import com.ganecamp.ui.lot.LotFormScreen
 import com.ganecamp.ui.lot.LotScreen
@@ -63,6 +64,14 @@ fun Navigation() {
             composable<VaccineAddFormNav> { backStackEntry ->
                 val vaccineAddFormNav = backStackEntry.toRoute<VaccineAddFormNav>()
                 VaccineAddFormScreen(navController, vaccineAddFormNav.animalId)
+            }
+            composable<EventAddFormNav> { backStackEntry ->
+                val eventAddFormNav = backStackEntry.toRoute<EventAddFormNav>()
+                EventAddFormScreen(
+                    navController,
+                    eventAddFormNav.entityId,
+                    eventAddFormNav.entityType
+                )
             }
         }
     }

@@ -55,12 +55,14 @@ import com.ganecamp.ui.general.getBreedText
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.navigation.AnimalsNav
+import com.ganecamp.ui.navigation.EventAddFormNav
 import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.navigation.VaccineAddFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Red
+import com.ganecamp.utilities.enums.EntityType
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.ganecamp.utilities.enums.Gender
 import com.ganecamp.utilities.enums.State
@@ -137,7 +139,11 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
                     items = events,
                     cardContent = { EventCard(it) },
                     addActionTextRes = R.string.add_event,
-                    onClickAdd = { /*Todo: All the events screen and here the navigation*/ })
+                    onClickAdd = {
+                        animal?.id?.let { animalId ->
+                            navController.navigate(EventAddFormNav(animalId, EntityType.Animal))
+                        }
+                    })
                 AnimalWeights(weights = weights,
                     onClickAdd = { /*Todo: All the weights screen and here the navigation*/ })
                 OutlinedButton(

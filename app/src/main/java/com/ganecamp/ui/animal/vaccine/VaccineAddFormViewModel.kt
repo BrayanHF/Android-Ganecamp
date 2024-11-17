@@ -106,5 +106,5 @@ data class VaccineFormState(
     val description: String = "",
     val date: Instant = Instant.now(),
     val animalId: String = "",
-    val isNew: Boolean = false
+    val isNew: Boolean = true
 )

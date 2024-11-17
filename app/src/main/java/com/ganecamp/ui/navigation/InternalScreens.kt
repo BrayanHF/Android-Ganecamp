@@ -1,5 +1,6 @@
 package com.ganecamp.ui.navigation
 
+import com.ganecamp.utilities.enums.EntityType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,3 +17,6 @@ data class LotFormNav(val lotId: String?)
 
 @Serializable
 data class VaccineAddFormNav(val animalId: String)
+
+@Serializable
+data class EventAddFormNav(val entityId: String, val entityType: EntityType)

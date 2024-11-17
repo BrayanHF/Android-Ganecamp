@@ -58,11 +58,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ganecamp.R
 import com.ganecamp.ui.theme.Black
+import com.ganecamp.ui.theme.DarkGray
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightGreen
 import com.ganecamp.ui.theme.Typography
 import com.ganecamp.ui.theme.White
-import com.ganecamp.ui.theme.Yellow
 import com.ganecamp.utilities.enums.FirestoreRespond
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.time.Instant
@@ -99,13 +99,16 @@ fun GeneralTopBar(
     val networkStatusHelper: NetworkStatusHelperViewModel = hiltViewModel()
     val isConnectedNetwork by networkStatusHelper.isConnectedNetwork.collectAsState()
 
-    val colorBar = if (isConnectedNetwork) LightGreen else White
-    BarColor(colorBar)
+    val colorTop = remember(isConnectedNetwork) {
+        if (isConnectedNetwork) LightGreen else White
+    }
+
+    BarColor(colorTop)
 
     TopAppBar(
         title = { Text(text = title, style = Typography.titleSmall) },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = LightGreen,
+            containerColor = colorTop,
             titleContentColor = MaterialTheme.colorScheme.secondary,
             navigationIconContentColor = MaterialTheme.colorScheme.secondary,
         ),
@@ -360,11 +363,13 @@ fun ToggleButtons(
                     isFirstSelected.value = option == txtFirstButton
                     onSelectionChange(isFirstSelected.value)
                 }, colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = if (isSelected) Black else Yellow,
-                    containerColor = if (isSelected) Yellow else Color.Transparent
+                    contentColor = if (isSelected) White else DarkGray,
+                    containerColor = if (isSelected) DarkGray else Color.Transparent
                 ), border = BorderStroke(
-                    width = 1.0.dp, color = Yellow
-                ), modifier = Modifier.weight(1f).padding(8.dp)
+                    width = 1.0.dp, color = DarkGray
+                ), modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp)
             ) {
                 Text(
                     text = option, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center

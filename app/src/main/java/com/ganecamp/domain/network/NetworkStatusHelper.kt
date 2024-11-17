@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Todo: Change it to be when you have a real connection
 @Singleton
 class NetworkStatusHelper @Inject constructor(@ApplicationContext context: Context) {
 
