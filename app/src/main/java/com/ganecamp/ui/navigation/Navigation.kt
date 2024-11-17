@@ -14,6 +14,7 @@ import com.ganecamp.ui.animal.AnimalDetailScreen
 import com.ganecamp.ui.animal.AnimalFormScreen
 import com.ganecamp.ui.animal.AnimalScreen
 import com.ganecamp.ui.animal.vaccine.VaccineAddFormScreen
+import com.ganecamp.ui.animal.weight.WeightFormScreen
 import com.ganecamp.ui.auth.LoginScreen
 import com.ganecamp.ui.auth.RegisterScreen
 import com.ganecamp.ui.auth.SplashScreen
@@ -72,6 +73,10 @@ fun Navigation() {
                     eventAddFormNav.entityId,
                     eventAddFormNav.entityType
                 )
+            }
+            composable<WeightFormNav> { backStackEntry ->
+                val weightAddFormNav = backStackEntry.toRoute<WeightFormNav>()
+                WeightFormScreen(navController, weightAddFormNav.animalId)
             }
         }
     }

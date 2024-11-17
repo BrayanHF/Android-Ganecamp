@@ -40,14 +40,12 @@ import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.ui.general.DatePickerField
-import com.ganecamp.ui.general.ErrorMessages
 import com.ganecamp.ui.general.GeneralTopBar
 import com.ganecamp.ui.general.NumberTextField
 import com.ganecamp.ui.general.ShowFirestoreError
 import com.ganecamp.ui.general.geAnimalGenderInfo
 import com.ganecamp.ui.general.getAnimalStateInfo
 import com.ganecamp.ui.general.getBreedText
-import com.ganecamp.ui.general.validateNumber
 import com.ganecamp.ui.navigation.AnimalDetailNav
 import com.ganecamp.ui.navigation.AnimalFormNav
 import com.ganecamp.ui.theme.Green
@@ -114,10 +112,6 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
 fun AnimalFormContent(
     state: AnimalFormState, lots: List<Lot>, viewModel: AnimalFormViewModel
 ) {
-    val errorMessages = ErrorMessages(
-        moreThanOnePointError = stringResource(id = R.string.error_more_than_one_point),
-        invalidCharactersError = stringResource(id = R.string.error_invalid_characters)
-    )
 
     Column(
         modifier = Modifier
@@ -157,22 +151,16 @@ fun AnimalFormContent(
             selectedLot = state.lotId,
             onLotChange = { viewModel.onLotChange(it) })
 
-        val weightError = validateNumber(state.weight, errorMessages)
         if (state.id == null) {
-            NumberTextField(value = state.weight,
-                onValueChange = {
-                    viewModel.onWeightChange(it)
-                },
-                label = stringResource(id = R.string.weight),
-                isError = weightError != null,
-                errorMessage = weightError ?: "",
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_weight),
-                        contentDescription = stringResource(id = R.string.weight),
-                        modifier = Modifier.size(24.dp)
-                    )
-                })
+            NumberTextField(value = state.weight, onValueChange = {
+                viewModel.onWeightChange(it)
+            }, label = stringResource(id = R.string.weight), trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_weight),
+                    contentDescription = stringResource(id = R.string.weight),
+                    modifier = Modifier.size(24.dp)
+                )
+            })
         }
 
         DatePickerField(
@@ -182,24 +170,17 @@ fun AnimalFormContent(
             icon = R.drawable.ic_purchase_date
         )
 
-        val purchaseValueError = validateNumber(state.purchaseValue, errorMessages)
-        NumberTextField(value = state.purchaseValue,
-            onValueChange = {
-                viewModel.onPurchaseValueChange(it)
-            },
-            label = stringResource(id = R.string.purchase_value),
-            isError = purchaseValueError != null,
-            errorMessage = purchaseValueError ?: "",
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_dollar),
-                    contentDescription = stringResource(id = R.string.purchase_value),
-                    modifier = Modifier.size(24.dp),
-                    tint = Red
-                )
-            })
+        NumberTextField(value = state.purchaseValue, onValueChange = {
+            viewModel.onPurchaseValueChange(it)
+        }, label = stringResource(id = R.string.purchase_value), trailingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_dollar),
+                contentDescription = stringResource(id = R.string.purchase_value),
+                modifier = Modifier.size(24.dp),
+                tint = Red
+            )
+        })
 
-        val saleValueError = validateNumber(state.saleValue, errorMessages)
         if (state.state == State.Sold) {
             DatePickerField(
                 selectedDate = state.saleDate.toInstant(),
@@ -208,27 +189,21 @@ fun AnimalFormContent(
                 icon = R.drawable.ic_sale_date
             )
 
-            NumberTextField(value = state.saleValue,
-                onValueChange = {
-                    viewModel.onSaleValueChange(it)
-                },
-                label = stringResource(id = R.string.sale_value),
-                isError = saleValueError != null,
-                errorMessage = saleValueError ?: "",
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_dollar),
-                        contentDescription = stringResource(id = R.string.sale_value),
-                        modifier = Modifier.size(24.dp),
-                        tint = Green
-                    )
-                })
+            NumberTextField(value = state.saleValue, onValueChange = {
+                viewModel.onSaleValueChange(it)
+            }, label = stringResource(id = R.string.sale_value), trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_dollar),
+                    contentDescription = stringResource(id = R.string.sale_value),
+                    modifier = Modifier.size(24.dp),
+                    tint = Green
+                )
+            })
         }
 
         Button(
             onClick = { viewModel.saveAnimal() },
             modifier = Modifier.align(Alignment.End),
-            enabled = (state.id != null || weightError == null) && purchaseValueError == null && (state.state != State.Sold || saleValueError == null)
         ) {
             Text(stringResource(id = R.string.save))
         }

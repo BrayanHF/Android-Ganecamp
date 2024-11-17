@@ -20,3 +20,6 @@ data class VaccineAddFormNav(val animalId: String)
 
 @Serializable
 data class EventAddFormNav(val entityId: String, val entityType: EntityType)
+
+@Serializable
+data class WeightFormNav(val animalId: String)

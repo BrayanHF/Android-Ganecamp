@@ -99,4 +99,5 @@
     <string name="title">Titulo</string>
     <string name="event_description">Descripción del evento</string>
     <string name="look_for_event">Buscar evento</string>
+    <string name="weight_date">Fecha de peso</string>
 </resources>

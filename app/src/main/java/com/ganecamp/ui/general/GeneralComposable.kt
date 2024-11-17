@@ -195,8 +195,6 @@ fun NumberTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    isError: Boolean,
-    errorMessage: String,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     var hasFocus by remember { mutableStateOf(false) }
@@ -208,7 +206,7 @@ fun NumberTextField(
                 onValueChange(sanitizedValue)
             },
             label = { Text(text = label) },
-            isError = isError,
+            isError = false,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier
                 .fillMaxWidth()
@@ -219,13 +217,13 @@ fun NumberTextField(
                     }
                 },
             trailingIcon = { trailingIcon?.invoke() })
-        if (isError) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
+//        if (isError) {
+//            Text(
+//                text = errorMessage,
+//                color = MaterialTheme.colorScheme.error,
+//                style = MaterialTheme.typography.bodySmall
+//            )
+//        }
     }
 }
 

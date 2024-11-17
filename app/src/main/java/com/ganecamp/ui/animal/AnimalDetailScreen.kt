@@ -58,6 +58,7 @@ import com.ganecamp.ui.navigation.AnimalsNav
 import com.ganecamp.ui.navigation.EventAddFormNav
 import com.ganecamp.ui.navigation.LotDetailNav
 import com.ganecamp.ui.navigation.VaccineAddFormNav
+import com.ganecamp.ui.navigation.WeightFormNav
 import com.ganecamp.ui.theme.Green
 import com.ganecamp.ui.theme.LightBlue
 import com.ganecamp.ui.theme.LightGray
@@ -144,8 +145,11 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
                             navController.navigate(EventAddFormNav(animalId, EntityType.Animal))
                         }
                     })
-                AnimalWeights(weights = weights,
-                    onClickAdd = { /*Todo: All the weights screen and here the navigation*/ })
+                AnimalWeights(weights = weights, onClickAdd = {
+                    animal?.id?.let { animalId ->
+                        navController.navigate(WeightFormNav(animalId))
+                    }
+                })
                 OutlinedButton(
                     onClick = {
                         viewModel.deleteAnimal(animal!!.tag)
