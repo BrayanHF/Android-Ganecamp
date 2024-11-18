@@ -6,8 +6,8 @@ import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.data.firibase.model.Vaccine
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -31,9 +31,9 @@ class VaccineDao @Inject constructor(
         return null
     }
 
-    suspend fun getAllVaccines(): Pair<List<Vaccine>, FirestoreRespond> {
+    suspend fun getAllVaccines(): Pair<List<Vaccine>, RepositoryRespond> {
         val farmVaccineCollectionReference = getFarmVaccineCollectionReference() ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
 
         return try {
@@ -45,16 +45,16 @@ class VaccineDao @Inject constructor(
                 vaccine.id = document.id
                 vaccines.add(vaccine)
             }
-            Pair(vaccines, FirestoreRespond.OK)
+            Pair(vaccines, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAllVaccines: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun getVaccineById(id: String): Pair<Vaccine?, FirestoreRespond> {
+    suspend fun getVaccineById(id: String): Pair<Vaccine?, RepositoryRespond> {
         val farmVaccineCollectionReference = getFarmVaccineCollectionReference() ?: return Pair(
-            null, FirestoreRespond.NO_FARM_SESSION
+            null, RepositoryRespond.NO_FARM_SESSION
         )
         return try {
             val vaccine: Vaccine?
@@ -65,51 +65,51 @@ class VaccineDao @Inject constructor(
                 vaccine = farmVaccineDocument.toObject<Vaccine>()
                 if (vaccine != null) {
                     vaccine.id = farmVaccineDocument.id
-                    return Pair(vaccine, FirestoreRespond.OK)
+                    return Pair(vaccine, RepositoryRespond.OK)
                 }
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getVaccineById: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun createVaccine(vaccine: Vaccine): Pair<String?, FirestoreRespond> {
+    suspend fun createVaccine(vaccine: Vaccine): Pair<String?, RepositoryRespond> {
         val farmVaccineCollectionReference = getFarmVaccineCollectionReference() ?: return Pair(
             null,
-            FirestoreRespond.NO_FARM_SESSION
+            RepositoryRespond.NO_FARM_SESSION
         )
         return try {
             val documentReference = farmVaccineCollectionReference.add(vaccine).await()
-            Pair(documentReference.id, FirestoreRespond.OK)
+            Pair(documentReference.id, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createVaccine: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun updateVaccine(vaccine: Vaccine): FirestoreRespond {
+    suspend fun updateVaccine(vaccine: Vaccine): RepositoryRespond {
         val farmVaccineCollectionReference =
-            getFarmVaccineCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getFarmVaccineCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             vaccine.id?.let {
                 farmVaccineCollectionReference.document(it).set(vaccine).await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateVaccine: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun deleteVaccineById(id: String): FirestoreRespond {
+    suspend fun deleteVaccineById(id: String): RepositoryRespond {
         val farmVaccineCollectionReference =
-            getFarmVaccineCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getFarmVaccineCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             farmVaccineCollectionReference.document(id).delete().await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in deleteVaccineById: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)

@@ -3,8 +3,8 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.model.Farm
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
@@ -16,7 +16,7 @@ class FarmDao @Inject constructor(db: FirebaseFirestore) {
 
     private val farmsCollection = db.collection(FirestoreCollections.FARM_COLLECTION)
 
-    suspend fun getFarmByToken(token: String): Pair<Farm?, FirestoreRespond> {
+    suspend fun getFarmByToken(token: String): Pair<Farm?, RepositoryRespond> {
         return try {
             val querySnapshot = farmsCollection.whereEqualTo("token", token).get().await()
             if (!querySnapshot.isEmpty) {
@@ -24,23 +24,23 @@ class FarmDao @Inject constructor(db: FirebaseFirestore) {
                 val farm = document.toObject<Farm>()
                 farm?.let {
                     it.id = document.id
-                    return Pair(farm, FirestoreRespond.OK)
+                    return Pair(farm, RepositoryRespond.OK)
                 }
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getFarmByToken: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun updateFarm(farm: Farm): FirestoreRespond {
+    suspend fun updateFarm(farm: Farm): RepositoryRespond {
         return try {
             farm.id?.let {
                 farmsCollection.document(it).set(farm).await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateFarm: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)

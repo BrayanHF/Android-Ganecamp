@@ -3,9 +3,9 @@ package com.ganecamp.data.firibase.dao
 import android.util.Log
 import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.model.GanecampUser
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.enums.FirestoreRespond.OK
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.enums.RepositoryRespond.OK
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
@@ -17,10 +17,10 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
 
     private val usersCollection = db.collection(FirestoreCollections.USER_COLLECTION)
 
-    suspend fun getUserByEmail(email: String): Pair<GanecampUser?, FirestoreRespond> {
+    suspend fun getUserByEmail(email: String): Pair<GanecampUser?, RepositoryRespond> {
         return try {
             val querySnapshot = usersCollection.whereEqualTo("email", email).get().await()
-            if (querySnapshot.isEmpty) return Pair(null, FirestoreRespond.NOT_FOUND)
+            if (querySnapshot.isEmpty) return Pair(null, RepositoryRespond.NOT_FOUND)
             val document = querySnapshot.documents.first()
             val user = document.toObject<GanecampUser>()
             user?.id = document.id
@@ -31,7 +31,7 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
         }
     }
 
-    suspend fun createUser(user: GanecampUser): FirestoreRespond {
+    suspend fun createUser(user: GanecampUser): RepositoryRespond {
         return try {
             usersCollection.add(user).await()
             return OK
@@ -42,13 +42,13 @@ class GanecampUserDao @Inject constructor(db: FirebaseFirestore) {
     }
 
     // Todo: Update email in firebase auth
-    suspend fun updateUser(user: GanecampUser): FirestoreRespond {
+    suspend fun updateUser(user: GanecampUser): RepositoryRespond {
         return try {
             user.id?.let {
                 usersCollection.document(it).set(user).await()
                 return OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateUser: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)

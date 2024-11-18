@@ -7,8 +7,8 @@ import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.domain.network.NetworkStatusHelper
 import com.ganecamp.data.firibase.model.Weight
 import com.ganecamp.data.firibase.model.WeightValue
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -35,9 +35,9 @@ class WeightDao @Inject constructor(
         return null
     }
 
-    suspend fun getAnimalWeights(idAnimal: String): Pair<List<Weight>, FirestoreRespond> {
+    suspend fun getAnimalWeights(idAnimal: String): Pair<List<Weight>, RepositoryRespond> {
         val animalWeightsReference = getAnimalWeightsCollectionReference(idAnimal) ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
 
         return try {
@@ -49,55 +49,55 @@ class WeightDao @Inject constructor(
                 weight.id = document.id
                 weights.add(weight)
             }
-            Pair(weights, FirestoreRespond.OK)
+            Pair(weights, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAnimalWeights: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun createWeight(animalId: String, weight: Weight): FirestoreRespond {
+    suspend fun createWeight(animalId: String, weight: Weight): RepositoryRespond {
         val animalWeightsReference =
-            getAnimalWeightsCollectionReference(animalId) ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalWeightsCollectionReference(animalId) ?: return RepositoryRespond.NO_FARM_SESSION
 
         return try {
             animalWeightsReference.add(weight).await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createWeight: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun updateWeight(animalId: String, weight: Weight): FirestoreRespond {
+    suspend fun updateWeight(animalId: String, weight: Weight): RepositoryRespond {
         val animalWeightsReference =
-            getAnimalWeightsCollectionReference(animalId) ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalWeightsCollectionReference(animalId) ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             weight.id?.let {
                 animalWeightsReference.document(it).set(weight).await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateWeight: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun deleteWeightById(id: String): FirestoreRespond {
+    suspend fun deleteWeightById(id: String): RepositoryRespond {
         val animalWeightsReference =
-            getAnimalWeightsCollectionReference(id) ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalWeightsCollectionReference(id) ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             animalWeightsReference.document(id).delete().await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in deleteWeightById: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun loadWeightValue(): Pair<WeightValue?, FirestoreRespond> {
-        farmSessionManager.getFarm() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+    suspend fun loadWeightValue(): Pair<WeightValue?, RepositoryRespond> {
+        farmSessionManager.getFarm() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
         return try {
             val weightValueQuery = db.collection(FirestoreCollections.WEIGHT_VALUE_COLLECTION)
                 .orderBy("date", Query.Direction.DESCENDING).limit(1)
@@ -106,10 +106,10 @@ class WeightDao @Inject constructor(
             if (!weightValueQuery.isEmpty) {
                 val weightValue = weightValueQuery.toObjects<WeightValue>().firstOrNull()
                 weightValue?.let {
-                    return Pair(it, FirestoreRespond.OK)
+                    return Pair(it, RepositoryRespond.OK)
                 }
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in loadWeightValue: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))

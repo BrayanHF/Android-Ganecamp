@@ -10,19 +10,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.ganecamp.ui.animal.AnimalDetailScreen
-import com.ganecamp.ui.animal.AnimalFormScreen
-import com.ganecamp.ui.animal.AnimalScreen
-import com.ganecamp.ui.animal.vaccine.VaccineAddFormScreen
-import com.ganecamp.ui.animal.weight.WeightFormScreen
-import com.ganecamp.ui.auth.LoginScreen
-import com.ganecamp.ui.auth.RegisterScreen
-import com.ganecamp.ui.auth.SplashScreen
-import com.ganecamp.ui.event.EventAddFormScreen
-import com.ganecamp.ui.lot.LotDetailScreen
-import com.ganecamp.ui.lot.LotFormScreen
-import com.ganecamp.ui.lot.LotScreen
-import com.ganecamp.ui.scan.ScanScreen
+import com.ganecamp.ui.navigation.screens.AnimalDetailNav
+import com.ganecamp.ui.navigation.screens.AnimalFormNav
+import com.ganecamp.ui.navigation.screens.AnimalsNav
+import com.ganecamp.ui.navigation.screens.EventAddFormNav
+import com.ganecamp.ui.navigation.screens.LoginNav
+import com.ganecamp.ui.navigation.screens.LotDetailNav
+import com.ganecamp.ui.navigation.screens.LotFormNav
+import com.ganecamp.ui.navigation.screens.LotsNav
+import com.ganecamp.ui.navigation.screens.RegisterNav
+import com.ganecamp.ui.navigation.screens.ScanNav
+import com.ganecamp.ui.navigation.screens.SplashNav
+import com.ganecamp.ui.navigation.screens.VaccineAddFormNav
+import com.ganecamp.ui.navigation.screens.WeightFormNav
+import com.ganecamp.ui.screen.animal.AnimalDetailScreen
+import com.ganecamp.ui.screen.animal.AnimalFormScreen
+import com.ganecamp.ui.screen.animal.AnimalScreen
+import com.ganecamp.ui.screen.auth.LoginScreen
+import com.ganecamp.ui.screen.auth.RegisterScreen
+import com.ganecamp.ui.screen.auth.SplashScreen
+import com.ganecamp.ui.screen.event.EventAddFormScreen
+import com.ganecamp.ui.screen.lot.LotDetailScreen
+import com.ganecamp.ui.screen.lot.LotFormScreen
+import com.ganecamp.ui.screen.lot.LotScreen
+import com.ganecamp.ui.screen.scan.ScanScreen
+import com.ganecamp.ui.screen.vaccine.VaccineAddFormScreen
+import com.ganecamp.ui.screen.weight.WeightFormScreen
 
 @Composable
 fun Navigation() {
@@ -32,7 +45,7 @@ fun Navigation() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination?.route
         if (currentDestination in bottomBarItems.map { it.screen }) {
-            BottomBar(navController)
+            NavigationBar(navController)
         }
     }) { innerPadding ->
         NavHost(

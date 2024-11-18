@@ -7,8 +7,8 @@ import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.data.firibase.model.Animal
 import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -32,9 +32,9 @@ class LotDao @Inject constructor(
         return null
     }
 
-    suspend fun getAllLots(): Pair<List<Lot>, FirestoreRespond> {
+    suspend fun getAllLots(): Pair<List<Lot>, RepositoryRespond> {
         val lotCollectionReference = getLotCollectionReference() ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
 
         return try {
@@ -46,16 +46,16 @@ class LotDao @Inject constructor(
                 lot.id = document.id
                 lots.add(lot)
             }
-            Pair(lots, FirestoreRespond.OK)
+            Pair(lots, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAllLots: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun getAnimalsByLotId(lotId: String): Pair<List<Animal>, FirestoreRespond> {
+    suspend fun getAnimalsByLotId(lotId: String): Pair<List<Animal>, RepositoryRespond> {
         val farmId = farmSessionManager.getFarm()?.id ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
 
         return try {
@@ -73,7 +73,7 @@ class LotDao @Inject constructor(
                     animals.add(it)
                 }
             }
-            Pair(animals, FirestoreRespond.OK)
+            Pair(animals, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAnimalsByLotId: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
@@ -81,10 +81,10 @@ class LotDao @Inject constructor(
     }
 
 
-    suspend fun getLotById(id: String): Pair<Lot?, FirestoreRespond> {
+    suspend fun getLotById(id: String): Pair<Lot?, RepositoryRespond> {
 
         val lotCollectionReference =
-            getLotCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getLotCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
 
         return try {
             val documentSnapshot =
@@ -92,36 +92,36 @@ class LotDao @Inject constructor(
             val lot = documentSnapshot.toObject<Lot>()
             lot?.let {
                 lot.id = documentSnapshot.id
-                return Pair(lot, FirestoreRespond.OK)
+                return Pair(lot, RepositoryRespond.OK)
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getLotById: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun createLot(lot: Lot): Pair<String?, FirestoreRespond> {
+    suspend fun createLot(lot: Lot): Pair<String?, RepositoryRespond> {
         val lotCollectionReference =
-            getLotCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getLotCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
         return try {
             val documentReference = lotCollectionReference.add(lot).await()
-            Pair(documentReference.id, FirestoreRespond.OK)
+            Pair(documentReference.id, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createLot: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun updateLot(lot: Lot): FirestoreRespond {
+    suspend fun updateLot(lot: Lot): RepositoryRespond {
         val lotCollectionReference =
-            getLotCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getLotCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             lot.id?.let {
                 lotCollectionReference.document(it).set(lot).await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateLot: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
@@ -129,12 +129,12 @@ class LotDao @Inject constructor(
 
     }
 
-    suspend fun deleteLotById(id: String): FirestoreRespond {
+    suspend fun deleteLotById(id: String): RepositoryRespond {
         val lotCollectionReference =
-            getLotCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getLotCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             lotCollectionReference.document(id).delete().await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in deleteLotById: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)

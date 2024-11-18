@@ -4,9 +4,8 @@ import android.util.Log
 import com.ganecamp.data.firibase.dao.FarmDao
 import com.ganecamp.data.firibase.dao.GanecampUserDao
 import com.ganecamp.data.firibase.model.GanecampUser
-import com.ganecamp.utilities.enums.AuthRespond
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.AuthErrorEvaluator
+import com.ganecamp.domain.enums.AuthRespond
+import com.ganecamp.domain.enums.RepositoryRespond
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -57,7 +56,7 @@ class FirebaseAuthentication @Inject constructor(
                     farmToken = farm.token
                 )
                 val respond = ganecampUserDao.createUser(user)
-                if (respond == FirestoreRespond.OK) {
+                if (respond == RepositoryRespond.OK) {
                     farmSessionManager.setFarm(farm)
                     return AuthRespond.OK
                 }

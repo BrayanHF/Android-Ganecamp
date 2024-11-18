@@ -6,8 +6,8 @@ import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.data.firibase.model.Animal
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -31,9 +31,9 @@ class AnimalDao @Inject constructor(
         return null
     }
 
-    suspend fun getAllAnimals(): Pair<List<Animal>, FirestoreRespond> {
+    suspend fun getAllAnimals(): Pair<List<Animal>, RepositoryRespond> {
         val animalReference = getAnimalCollectionReference() ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
         return try {
             val animals = mutableListOf<Animal>()
@@ -43,16 +43,16 @@ class AnimalDao @Inject constructor(
                 animal.id = document.id
                 animals.add(animal)
             }
-            Pair(animals, FirestoreRespond.OK)
+            Pair(animals, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAllAnimals: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun getAnimalById(id: String): Pair<Animal?, FirestoreRespond> {
+    suspend fun getAnimalById(id: String): Pair<Animal?, RepositoryRespond> {
         val animalCollectionReference =
-            getAnimalCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getAnimalCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
 
         return try {
             val document =
@@ -61,18 +61,18 @@ class AnimalDao @Inject constructor(
             val animal = document.toObject<Animal>()
             animal?.let {
                 it.id = document.id
-                return Pair(animal, FirestoreRespond.OK)
+                return Pair(animal, RepositoryRespond.OK)
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAnimalById: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun getAnimalByTag(tag: String): Pair<Animal?, FirestoreRespond> {
+    suspend fun getAnimalByTag(tag: String): Pair<Animal?, RepositoryRespond> {
         val animalCollectionReference =
-            getAnimalCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getAnimalCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
 
         return try {
             val querySnapshot = animalCollectionReference.whereEqualTo("tag", tag)
@@ -82,54 +82,54 @@ class AnimalDao @Inject constructor(
                 val animal = document.toObject<Animal>()
                 animal?.let {
                     animal.id = document.id
-                    return Pair(animal, FirestoreRespond.OK)
+                    return Pair(animal, RepositoryRespond.OK)
                 }
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAnimalByTag: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun createAnimal(animal: Animal): FirestoreRespond {
+    suspend fun createAnimal(animal: Animal): RepositoryRespond {
         val animalCollectionReference =
-            getAnimalCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             animalCollectionReference.add(animal).await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createAnimal: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun updateAnimal(animal: Animal): FirestoreRespond {
+    suspend fun updateAnimal(animal: Animal): RepositoryRespond {
         val animalCollectionReference =
-            getAnimalCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
         return try {
             animal.id?.let {
                 animalCollectionReference.document(it).set(animal).await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateAnimal: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun deleteAnimalByTag(tag: String): FirestoreRespond {
+    suspend fun deleteAnimalByTag(tag: String): RepositoryRespond {
         val animalCollectionReference =
-            getAnimalCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getAnimalCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
 
         return try {
             val animal = getAnimalByTag(tag)
             animal.first?.id?.let {
                 animalCollectionReference.document(it).delete().await()
-                return FirestoreRespond.OK
+                return RepositoryRespond.OK
             }
-            FirestoreRespond.NOT_FOUND
+            RepositoryRespond.NOT_FOUND
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in deleteAnimalByTag: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)

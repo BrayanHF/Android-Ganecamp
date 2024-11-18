@@ -2,7 +2,7 @@ package com.ganecamp.domain.services
 
 import com.ganecamp.data.firibase.dao.EventAppliedDao
 import com.ganecamp.data.firibase.model.EntityEvent
-import com.ganecamp.utilities.enums.EntityType
+import com.ganecamp.domain.enums.EntityType
 import javax.inject.Inject
 import javax.inject.Singleton
 

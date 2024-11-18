@@ -6,8 +6,8 @@ import com.ganecamp.data.firibase.FirestoreCollections
 import com.ganecamp.data.firibase.getSourceFrom
 import com.ganecamp.data.firibase.model.Event
 import com.ganecamp.domain.network.NetworkStatusHelper
-import com.ganecamp.utilities.enums.FirestoreRespond
-import com.ganecamp.utilities.functions.FirestoreErrorEvaluator
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.data.firibase.FirestoreErrorEvaluator
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -34,9 +34,9 @@ class EventDao @Inject constructor(
         return null
     }
 
-    suspend fun getAllEvents(): Pair<List<Event>, FirestoreRespond> {
+    suspend fun getAllEvents(): Pair<List<Event>, RepositoryRespond> {
         val eventCollectionReference = getEventCollectionReference() ?: return Pair(
-            emptyList(), FirestoreRespond.NO_FARM_SESSION
+            emptyList(), RepositoryRespond.NO_FARM_SESSION
         )
 
         return try {
@@ -56,16 +56,16 @@ class EventDao @Inject constructor(
                 event.id = document.id
                 events.add(event)
             }
-            Pair(events, FirestoreRespond.OK)
+            Pair(events, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getAllEvents: ${e.message}")
             Pair(emptyList(), FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun getEventById(id: String): Pair<Event?, FirestoreRespond> {
+    suspend fun getEventById(id: String): Pair<Event?, RepositoryRespond> {
         val eventCollectionReference =
-            getEventCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getEventCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
 
         return try {
             val event: Event?
@@ -76,7 +76,7 @@ class EventDao @Inject constructor(
                 event = farmEventDocument.toObject<Event>()
                 event?.let {
                     event.id = farmEventDocument.id
-                    return Pair(event, FirestoreRespond.OK)
+                    return Pair(event, RepositoryRespond.OK)
                 }
             } else {
                 val generalEventDocument = generalEventCollectionReference.document(id)
@@ -84,52 +84,52 @@ class EventDao @Inject constructor(
                 event = generalEventDocument.toObject<Event>()
                 event?.let {
                     event.id = generalEventDocument.id
-                    return Pair(event, FirestoreRespond.OK)
+                    return Pair(event, RepositoryRespond.OK)
                 }
             }
-            Pair(null, FirestoreRespond.NOT_FOUND)
+            Pair(null, RepositoryRespond.NOT_FOUND)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in getEventById: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun createEvent(event: Event): Pair<String?, FirestoreRespond> {
+    suspend fun createEvent(event: Event): Pair<String?, RepositoryRespond> {
         val eventCollectionReference =
-            getEventCollectionReference() ?: return Pair(null, FirestoreRespond.NO_FARM_SESSION)
+            getEventCollectionReference() ?: return Pair(null, RepositoryRespond.NO_FARM_SESSION)
 
         return try {
             val documentReference = eventCollectionReference.add(event).await()
-            Pair(documentReference.id, FirestoreRespond.OK)
+            Pair(documentReference.id, RepositoryRespond.OK)
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in createEvent: ${e.message}")
             Pair(null, FirestoreErrorEvaluator.evaluateError(e))
         }
     }
 
-    suspend fun updateEvent(event: Event): FirestoreRespond {
+    suspend fun updateEvent(event: Event): RepositoryRespond {
         val eventCollectionReference =
-            getEventCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getEventCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
 
         return try {
             event.id?.let {
                 eventCollectionReference.document(it).set(event).await()
-                FirestoreRespond.OK
+                RepositoryRespond.OK
             }
-            FirestoreRespond.NULL_POINTER
+            RepositoryRespond.NULL_POINTER
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in updateEvent: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
         }
     }
 
-    suspend fun deleteEventById(id: String): FirestoreRespond {
+    suspend fun deleteEventById(id: String): RepositoryRespond {
         val eventCollectionReference =
-            getEventCollectionReference() ?: return FirestoreRespond.NO_FARM_SESSION
+            getEventCollectionReference() ?: return RepositoryRespond.NO_FARM_SESSION
 
         return try {
             eventCollectionReference.document(id).delete().await()
-            FirestoreRespond.OK
+            RepositoryRespond.OK
         } catch (e: Exception) {
             Log.e("GanecampErrors", "Error in deleteEventById: ${e.message}")
             FirestoreErrorEvaluator.evaluateError(e)
