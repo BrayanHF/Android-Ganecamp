@@ -26,7 +26,7 @@ import com.ganecamp.ui.viewmodel.NetworkStatusHelperViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralTopBar(
+fun GenericTopBar(
     title: String, onBackClick: () -> Unit, content: @Composable RowScope.() -> Unit = {}
 ) {
     val networkStatusHelper: NetworkStatusHelperViewModel = hiltViewModel()

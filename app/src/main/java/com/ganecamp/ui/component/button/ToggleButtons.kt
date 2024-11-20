@@ -18,38 +18,58 @@ import androidx.compose.ui.unit.dp
 import com.ganecamp.ui.theme.DarkGray
 import com.ganecamp.ui.theme.White
 
-// Todo: Independents buttons
 @Composable
 fun ToggleButtons(
-    txtFirstButton: String, txtSecondButton: String, onSelectionChange: (Boolean) -> Unit
+    txtLeftButton: String,
+    txtRightButton: String,
+    onClickLeft: (Boolean) -> Unit,
+    onCLickRight: (Boolean) -> Unit,
+    leftButtonSelectedFirsts: Boolean = true
 ) {
-    val isFirstSelected = remember { mutableStateOf(true) }
-    val options = listOf(txtFirstButton, txtSecondButton)
-
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround
     ) {
-        options.forEach { option ->
-            val isSelected =
-                (option == txtFirstButton && isFirstSelected.value) || (option == txtSecondButton && !isFirstSelected.value)
-
-            OutlinedButton(
-                onClick = {
-                    isFirstSelected.value = option == txtFirstButton
-                    onSelectionChange(isFirstSelected.value)
-                }, colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = if (isSelected) White else DarkGray,
-                    containerColor = if (isSelected) DarkGray else Color.Transparent
-                ), border = BorderStroke(
-                    width = 1.0.dp, color = DarkGray
-                ), modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = option, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
-                )
-            }
+        val isLeftSelected = remember { mutableStateOf(leftButtonSelectedFirsts) }
+        val isRightSelected = remember { mutableStateOf(!leftButtonSelectedFirsts) }
+        OutlinedButton(
+            onClick = {
+                isLeftSelected.value = true
+                isRightSelected.value = false
+                onClickLeft(isLeftSelected.value)
+            }, colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = if (isLeftSelected.value) White else DarkGray,
+                containerColor = if (isLeftSelected.value) DarkGray else Color.Transparent
+            ), border = BorderStroke(
+                width = 1.0.dp, color = DarkGray
+            ), modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = txtLeftButton,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                isLeftSelected.value = false
+                isRightSelected.value = true
+                onCLickRight(isRightSelected.value)
+            }, colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = if (isRightSelected.value) White else DarkGray,
+                containerColor = if (isRightSelected.value) DarkGray else Color.Transparent
+            ), border = BorderStroke(
+                width = 1.0.dp, color = DarkGray
+            ), modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = txtRightButton,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

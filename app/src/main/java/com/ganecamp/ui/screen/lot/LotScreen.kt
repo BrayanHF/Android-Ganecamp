@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Lot
+import com.ganecamp.domain.enums.RepositoryRespond
 import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
 import com.ganecamp.ui.component.misc.IsLoading
 import com.ganecamp.ui.component.misc.NoRegistered
@@ -46,7 +47,6 @@ import com.ganecamp.ui.navigation.screens.LotDetailNav
 import com.ganecamp.ui.navigation.screens.LotFormNav
 import com.ganecamp.ui.theme.LightGray
 import com.ganecamp.ui.theme.Typography
-import com.ganecamp.domain.enums.RepositoryRespond
 
 @Composable
 fun LotScreen(navController: NavController) {
@@ -85,17 +85,14 @@ fun LotScreen(navController: NavController) {
 
         FloatingActionButton(
             onClick = { navController.navigate(LotFormNav(null)) },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.BottomEnd)
-                .size(64.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 12.dp, end = 8.dp),
             elevation = FloatingActionButtonDefaults.elevation(0.dp),
-            containerColor = Color.Transparent
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_add),
+                imageVector = Icons.Filled.Add,
                 contentDescription = stringResource(id = R.string.add),
-                modifier = Modifier.background(Color.Transparent)
             )
         }
     }

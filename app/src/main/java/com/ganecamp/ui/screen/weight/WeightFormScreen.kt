@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.ui.component.bar.GeneralTopBar
+import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 import com.ganecamp.ui.component.field.NumberTextField
@@ -59,7 +59,7 @@ fun WeightFormScreen(navController: NavController, animalId: String) {
     }
 
     Scaffold(topBar = {
-        GeneralTopBar(title = stringResource(id = R.string.add_weight),
+        GenericTopBar(title = stringResource(id = R.string.add_weight),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
         Box(

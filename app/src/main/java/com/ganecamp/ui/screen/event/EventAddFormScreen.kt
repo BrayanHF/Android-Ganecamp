@@ -36,11 +36,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Event
-import com.ganecamp.ui.component.bar.GeneralTopBar
-import com.ganecamp.ui.component.button.ToggleButtons
-import com.ganecamp.ui.component.field.DatePickerField
 import com.ganecamp.domain.enums.EntityType
 import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.ui.component.bar.GenericTopBar
+import com.ganecamp.ui.component.button.ToggleButtons
+import com.ganecamp.ui.component.field.DatePickerField
 
 @Composable
 fun EventAddFormScreen(navController: NavHostController, entityId: String, entityType: EntityType) {
@@ -69,7 +69,7 @@ fun EventAddFormScreen(navController: NavHostController, entityId: String, entit
     }
 
     Scaffold(topBar = {
-        GeneralTopBar(title = stringResource(id = R.string.add_event),
+        GenericTopBar(title = stringResource(id = R.string.add_event),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -92,9 +92,10 @@ fun EventFormContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (vaccines.isNotEmpty()) {
-            ToggleButtons(txtFirstButton = stringResource(id = R.string.new_event),
-                txtSecondButton = stringResource(id = R.string.old_event),
-                onSelectionChange = { viewModel.onIsNewChange(it) })
+            ToggleButtons(txtLeftButton = stringResource(id = R.string.new_event),
+                txtRightButton = stringResource(id = R.string.old_event),
+                onClickLeft = { viewModel.onIsNewChange(it) },
+                onCLickRight = { viewModel.onIsNewChange(!it) })
         }
         if (state.isNew) {
             OutlinedTextField(value = state.title,

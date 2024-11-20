@@ -39,7 +39,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.ui.component.bar.GeneralTopBar
+import com.ganecamp.domain.enums.AnimalBreed
+import com.ganecamp.domain.enums.AnimalGender
+import com.ganecamp.domain.enums.AnimalState
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 import com.ganecamp.ui.component.field.NumberTextField
@@ -50,10 +54,6 @@ import com.ganecamp.ui.theme.Red
 import com.ganecamp.ui.util.geAnimalGenderRes
 import com.ganecamp.ui.util.getAnimalBreedRes
 import com.ganecamp.ui.util.getAnimalStateRes
-import com.ganecamp.domain.enums.AnimalBreed
-import com.ganecamp.domain.enums.AnimalGender
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.ganecamp.domain.enums.AnimalState
 
 @Composable
 fun AnimalFormScreen(navController: NavController, animalId: String?, tag: String) {
@@ -73,9 +73,14 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
 
     LaunchedEffect(animalSaved) {
         if (animalSaved) {
-            navController.navigate(AnimalDetailNav(state.id!!)) {
-                popUpTo(AnimalFormNav(state.id, state.tag)) { inclusive = true }
-                launchSingleTop = true
+            state.id?.let { newAnimalId ->
+                if (animalId == null) {
+                    navController.navigate(AnimalDetailNav(newAnimalId)) {
+                        popUpTo(AnimalFormNav(null, state.tag)) { inclusive = true }
+                    }
+                } else {
+                    navController.popBackStack()
+                }
             }
         }
     }
@@ -92,9 +97,11 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
     }
 
     Scaffold(topBar = {
-        GeneralTopBar(title = if (animalId == null) stringResource(id = R.string.new_animal)
-        else stringResource(id = R.string.edit_animal),
-            onBackClick = { navController.popBackStack() })
+        GenericTopBar(
+            onBackClick = { navController.popBackStack() },
+            title = if (animalId == null) stringResource(id = R.string.add_animal)
+            else stringResource(id = R.string.edit_animal),
+        )
     }) { innerPadding ->
         Box(
             modifier = Modifier
@@ -133,13 +140,16 @@ fun AnimalFormContent(
                 )
             })
 
-        GenderDropdown(
-            selectedAnimalGender = state.animalGender,
+        GenderDropdown(selectedAnimalGender = state.animalGender,
             onGenderChange = { viewModel.onGenderChange(it) })
 
-        BreedDropdown(selectedAnimalBreed = state.animalBreed, onBreedChange = { viewModel.onBreedChange(it) })
+        BreedDropdown(
+            selectedAnimalBreed = state.animalBreed,
+            onBreedChange = { viewModel.onBreedChange(it) })
 
-        StateDropdown(selectedAnimalState = state.animalState, onStateChange = { viewModel.onStateChange(it) })
+        StateDropdown(
+            selectedAnimalState = state.animalState,
+            onStateChange = { viewModel.onStateChange(it) })
 
         DatePickerField(
             selectedDate = state.birthDate.toInstant(),
@@ -147,7 +157,8 @@ fun AnimalFormContent(
             label = R.string.birth_date
         )
 
-        LotDropdown(lots = lots,
+        LotDropdown(
+            lots = lots,
             selectedLot = state.lotId,
             onLotChange = { viewModel.onLotChange(it) })
 

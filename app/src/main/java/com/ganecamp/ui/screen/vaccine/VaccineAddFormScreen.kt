@@ -36,10 +36,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
 import com.ganecamp.data.firibase.model.Vaccine
-import com.ganecamp.ui.component.bar.GeneralTopBar
+import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.button.ToggleButtons
 import com.ganecamp.ui.component.field.DatePickerField
-import com.ganecamp.domain.enums.RepositoryRespond
 
 @Composable
 fun VaccineAddFormScreen(navController: NavHostController, animalId: String) {
@@ -68,7 +68,7 @@ fun VaccineAddFormScreen(navController: NavHostController, animalId: String) {
     }
 
     Scaffold(topBar = {
-        GeneralTopBar(title = stringResource(id = R.string.add_vaccine),
+        GenericTopBar(title = stringResource(id = R.string.add_vaccine),
             onBackClick = { navController.popBackStack() })
     }) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -91,9 +91,11 @@ fun VaccineFormContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (vaccines.isNotEmpty()) {
-            ToggleButtons(txtFirstButton = stringResource(id = R.string.new_vaccine),
-                txtSecondButton = stringResource(id = R.string.old_vaccine),
-                onSelectionChange = { viewModel.onIsNewChange(it) })
+            ToggleButtons(
+                txtLeftButton = stringResource(id = R.string.new_vaccine),
+                txtRightButton = stringResource(id = R.string.old_vaccine),
+                onClickLeft = { viewModel.onIsNewChange(it) },
+                onCLickRight = { viewModel.onIsNewChange(!it) })
         }
         if (state.isNew) {
             OutlinedTextField(value = state.name,

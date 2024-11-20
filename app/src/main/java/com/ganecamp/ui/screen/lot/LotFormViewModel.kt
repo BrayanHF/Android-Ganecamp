@@ -3,8 +3,8 @@ package com.ganecamp.ui.screen.lot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.services.LotService
 import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,28 +19,39 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
     private val _uiState = MutableStateFlow(LotFormState())
     val uiState: StateFlow<LotFormState> = _uiState
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _lotSaved = MutableStateFlow(false)
     val lotSaved: StateFlow<Boolean> = _lotSaved
 
     private val _error = MutableStateFlow(RepositoryRespond.OK)
     val error: StateFlow<RepositoryRespond> = _error
 
+    fun nothingToLoad() {
+        _isLoading.value = false
+    }
+
     fun loadLot(lotId: String) {
         viewModelScope.launch {
-            val lotRespond = lotService.getLotById(lotId)
-            if (lotRespond.second == RepositoryRespond.OK) {
-                lotRespond.first?.let { lot ->
+            _isLoading.value = true
+            val (lot, respond) = lotService.getLotById(lotId)
+            if (respond == RepositoryRespond.OK) {
+                lot?.let { lotFound ->
                     _uiState.value = LotFormState(
-                        id = lot.id,
-                        purchaseValue = lot.purchaseValue.toString(),
-                        purchaseDate = lot.purchaseDate.toInstant(),
-                        saleValue = lot.saleValue.toString(),
-                        saleDate = lot.saleDate.toInstant(),
-                        sold = lot.sold
+                        id = lotFound.id,
+                        name = lotFound.name,
+                        purchasedAnimals = lotFound.purchasedAnimals.toString(),
+                        purchaseValue = lotFound.purchaseValue.toString(),
+                        purchaseDate = lotFound.purchaseDate.toInstant(),
+                        saleValue = lotFound.saleValue.toString(),
+                        saleDate = lotFound.saleDate.toInstant(),
+                        sold = lotFound.sold
                     )
                 }
+                _isLoading.value = false
             } else {
-                _error.value = lotRespond.second
+                _error.value = respond
             }
         }
     }

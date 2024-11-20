@@ -45,7 +45,6 @@
     <string name="add_weight">Agregar Peso</string>
     <string name="edit_animal">Editar Animal</string>
     <string name="delete_animal">Aliminar Animal</string>
-    <string name="new_animal">Agregar Animal</string>
     <string name="error_more_than_one_point">No puede haber mas de un punto</string>
     <string name="error_invalid_characters">Caracteres Invalidos</string>
     <string name="calendar">Calendario</string>
@@ -105,4 +104,8 @@
     <string name="animal_count">Conteo de animales</string>
     <string name="not_sold">No vendido</string>
     <string name="purchased_animals">Animales comprados</string>
+    <string name="delete_lot">Eliminar Lote</string>
+    <string name="edit_lot">Editar Lote</string>
+    <string name="no_items">No hay elementos para mostrar.</string>
+    <string name="add_lot">Agregar Lote</string>
 </resources>
