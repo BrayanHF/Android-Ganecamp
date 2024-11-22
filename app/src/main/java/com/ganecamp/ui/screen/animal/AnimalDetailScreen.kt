@@ -22,9 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,18 +31,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.data.firibase.model.EventApplied
-import com.ganecamp.data.firibase.model.VaccineApplied
-import com.ganecamp.data.firibase.model.Weight
 import com.ganecamp.domain.enums.AnimalGender
 import com.ganecamp.domain.enums.AnimalState
 import com.ganecamp.domain.enums.EntityType
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Animal
+import com.ganecamp.domain.model.EventApplied
+import com.ganecamp.domain.model.VaccineApplied
+import com.ganecamp.domain.model.Weight
 import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.button.ActionButton
 import com.ganecamp.ui.component.card.InfoCard
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.layout.SectionWithLazyColumn
 import com.ganecamp.ui.component.layout.SectionWithLazyRow
 import com.ganecamp.ui.component.layout.TwoColumns
@@ -67,10 +63,10 @@ import com.ganecamp.ui.util.getAnimalStateRes
 fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
     val viewModel: AnimalDetailViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState(initial = true)
-    val animal: Animal? by viewModel.animal.collectAsState()
-    val vaccines: List<VaccineApplied> by viewModel.vaccines.collectAsState()
-    val events: List<EventApplied> by viewModel.events.collectAsState()
-    val weights: List<Weight> by viewModel.weights.collectAsState()
+    val animal by viewModel.animal.collectAsState()
+    val vaccines by viewModel.vaccines.collectAsState()
+    val events by viewModel.events.collectAsState()
+    val weights by viewModel.weights.collectAsState()
     val age by viewModel.ageAnimal.collectAsState()
     val weightValue by viewModel.weightValue.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -83,15 +79,8 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
         viewModel.loadWeightValue()
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {
@@ -127,10 +116,8 @@ fun AnimalDetailScreen(navController: NavHostController, animalId: String) {
                     ActionButton(
                         text = stringResource(R.string.delete_animal),
                         onClick = {
-                            animal.id?.let { animalId ->
-                                viewModel.deleteAnimal(animalId)
-                                navController.popBackStack()
-                            }
+                            viewModel.deleteAnimal()
+                            navController.popBackStack()
                         },
                         color = Red,
                         modifier = Modifier
@@ -161,7 +148,7 @@ fun AnimalDetailContent(
         itemsSection = vaccines,
         cardItem = { vaccine ->
             InfoCard(onClick = { //Todo: Add navigation to vaccine detail
-            }, info = vaccine.name, date = vaccine.date.toInstant())
+            }, info = vaccine.name, date = vaccine.date)
         },
         textButtonAdd = stringResource(R.string.add_vaccine),
         onClickAdd = {
@@ -174,7 +161,7 @@ fun AnimalDetailContent(
         itemsSection = events,
         cardItem = { event ->
             InfoCard(onClick = { //Todo: Add navigation to event detail
-            }, info = event.title, date = event.date.toInstant())
+            }, info = event.title, date = event.date)
         },
         textButtonAdd = stringResource(R.string.add_event),
         onClickAdd = {
@@ -244,8 +231,7 @@ fun AnimalInfo(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                ActionButton(
-                    text = stringResource(id = R.string.edit_animal),
+                ActionButton(text = stringResource(id = R.string.edit_animal),
                     color = LightBlue,
                     onClick = {
                         navController.navigate(AnimalFormNav(animal.id, animal.tag))
@@ -267,7 +253,7 @@ fun AnimalInfo(
             if (age != null) {
                 TwoColumns(
                     titleLeft = stringResource(id = R.string.birth_date),
-                    valueLeft = TimeUtil.formatter.format(animal.birthDate.toInstant()),
+                    valueLeft = TimeUtil.formatter.format(animal.birthDate),
                     titleRight = stringResource(R.string.age),
                     valueRight = when {
                         age.first > 0 -> "${age.first} " + stringResource(id = R.string.years)
@@ -279,7 +265,7 @@ fun AnimalInfo(
 
             TwoColumns(
                 titleLeft = stringResource(id = R.string.purchase_date),
-                valueLeft = TimeUtil.formatter.format(animal.purchaseDate.toInstant()),
+                valueLeft = TimeUtil.formatter.format(animal.purchaseDate),
                 titleRight = stringResource(R.string.purchase_value),
                 valueRight = "$" + formatNumber(animal.purchaseValue.toString())
             )
@@ -287,7 +273,7 @@ fun AnimalInfo(
             if (animal.animalState == AnimalState.Sold) {
                 TwoColumns(
                     titleLeft = stringResource(R.string.sale_date),
-                    valueLeft = TimeUtil.formatter.format(animal.saleDate.toInstant()),
+                    valueLeft = TimeUtil.formatter.format(animal.saleDate),
                     titleRight = stringResource(R.string.sale_value),
                     valueRight = "$" + formatNumber(animal.saleValue.toString())
                 )
@@ -337,7 +323,7 @@ fun WeightCard(weight: Weight, onClick: () -> Unit?) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = TimeUtil.formatter.format(weight.date.toInstant()),
+                text = TimeUtil.formatter.format(weight.date),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f)
             )

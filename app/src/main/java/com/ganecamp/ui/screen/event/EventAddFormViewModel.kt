@@ -2,14 +2,16 @@ package com.ganecamp.ui.screen.event
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.model.EntityEvent
-import com.ganecamp.data.firibase.model.Event
-import com.ganecamp.domain.services.EventAppliedService
-import com.ganecamp.domain.services.EventService
 import com.ganecamp.domain.enums.EntityType
 import com.ganecamp.domain.enums.EntityType.Animal
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.google.firebase.Timestamp
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.EntityEvent
+import com.ganecamp.domain.model.Event
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.event.AddFarmEventUseCase
+import com.ganecamp.domain.usecase.event.GetAllFarmEventsUseCase
+import com.ganecamp.domain.usecase.eventapplied.AddEntityEventUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +21,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventAddFormViewModel @Inject constructor(
-    private val eventService: EventService, private val eventAppliedService: EventAppliedService
+    private val getAllFarmEventsUseCase: GetAllFarmEventsUseCase,
+    private val addFarmEventUseCase: AddFarmEventUseCase,
+    private val addEntityEventUseCase: AddEntityEventUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EventFormState())
@@ -31,16 +35,18 @@ class EventAddFormViewModel @Inject constructor(
     private val _eventSaved = MutableStateFlow(false)
     val eventSaved: StateFlow<Boolean> = _eventSaved
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
+
+    fun dismissError() {
+        _error.value = null
+    }
 
     fun loadEvents() {
         viewModelScope.launch {
-            val eventResponse = eventService.getAllEvents()
-            if (eventResponse.second == RepositoryRespond.OK) {
-                _events.value = eventResponse.first
-            } else {
-                _error.value = eventResponse.second
+            when (val result = getAllFarmEventsUseCase()) {
+                is Success -> _events.value = result.data
+                is Error -> _error.value = result.errorType
             }
         }
     }
@@ -69,28 +75,27 @@ class EventAddFormViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             if (currentState.isNew) {
-                val eventResponse = eventService.createEvent(
-                    Event(
-                        title = currentState.title, description = currentState.description
-                    )
-                )
-                if (eventResponse.second == RepositoryRespond.OK) {
-                    currentState.eventId = eventResponse.first!!
-                } else {
-                    _error.value = eventResponse.second
-                    return@launch
+                val newEvent =
+                    Event(title = currentState.title, description = currentState.description)
+                when (val result = addFarmEventUseCase(newEvent)) {
+                    is Success -> currentState.eventId = result.data
+                    is Error -> {
+                        _error.value = result.errorType
+                        return@launch
+                    }
                 }
             }
-            val applyEventResponse = eventAppliedService.createEntityEvent(
-                entityId = currentState.entityId, entityEvent = EntityEvent(
-                    eventId = currentState.eventId, date = Timestamp(currentState.date)
-                ), entityType = currentState.entityType
-            )
 
-            if (applyEventResponse == RepositoryRespond.OK) {
-                _eventSaved.value = true
-            } else {
-                _error.value = applyEventResponse
+            val newEntityEvent = EntityEvent(
+                eventId = currentState.eventId, date = currentState.date
+            )
+            when (val result = addEntityEventUseCase.invoke(
+                entityId = currentState.entityId,
+                entityEvent = newEntityEvent,
+                entityType = currentState.entityType
+            )) {
+                is Success -> _eventSaved.value = true
+                is Error -> _error.value = result.errorType
             }
         }
     }

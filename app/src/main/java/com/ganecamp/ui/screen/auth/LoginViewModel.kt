@@ -2,9 +2,11 @@ package com.ganecamp.ui.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.FirebaseAuthentication
-import com.ganecamp.domain.enums.AuthRespond
-import com.ganecamp.domain.enums.AuthRespond.OK
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.auth.SignInUseCase
+import com.ganecamp.domain.usecase.auth.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val auth: FirebaseAuthentication
+    private val signInUseCase: SignInUseCase, private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
     private val _email = MutableStateFlow("")
@@ -22,22 +24,14 @@ class LoginViewModel @Inject constructor(
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
-    private val _showErrorDialog = MutableStateFlow(false)
-    val showErrorDialog: StateFlow<Boolean> = _showErrorDialog
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _authRespond = MutableStateFlow(AuthRespond.UNKNOWN_ERROR)
-    val authRespond: StateFlow<AuthRespond> = _authRespond
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
 
-    private fun showErrorDialog() {
-        _showErrorDialog.value = true
-    }
-
-    fun closeErrorDialog() {
-        _showErrorDialog.value = false
-    }
+    private val _success = MutableStateFlow(false)
+    val success: StateFlow<Boolean> = _success
 
     fun onEmailChange(email: String) {
         _email.value = email
@@ -47,20 +41,23 @@ class LoginViewModel @Inject constructor(
         _password.value = password
     }
 
+    fun dismissError() {
+        _error.value = null
+    }
+
     fun signInWithEmailAndPassword() {
         viewModelScope.launch {
             _isLoading.value = true
-            val respond = auth.signInWithEmailAndPassword(_email.value, _password.value)
-            _authRespond.value = respond
-            _isLoading.value = false
-            if (respond != OK) {
-                showErrorDialog()
+            when (val result = signInUseCase(_email.value, _password.value)) {
+                is Success -> _success.value = true
+                is Error -> _error.value = result.errorType
             }
+            _isLoading.value = false
         }
     }
 
     fun signOut() {
-        auth.signOut()
+        signOutUseCase()
     }
 
 }

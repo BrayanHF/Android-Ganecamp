@@ -25,9 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,9 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.domain.model.Lot
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.misc.IsLoading
 import com.ganecamp.ui.component.misc.NoRegistered
 import com.ganecamp.ui.navigation.screens.LotDetailNav
@@ -59,16 +55,8 @@ fun LotScreen(navController: NavController) {
         viewModel.loadLots()
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
-        showError = false
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Box(
@@ -85,7 +73,9 @@ fun LotScreen(navController: NavController) {
 
         FloatingActionButton(
             onClick = { navController.navigate(LotFormNav(null)) },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 12.dp, end = 8.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 12.dp, end = 8.dp),
             elevation = FloatingActionButtonDefaults.elevation(0.dp),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary

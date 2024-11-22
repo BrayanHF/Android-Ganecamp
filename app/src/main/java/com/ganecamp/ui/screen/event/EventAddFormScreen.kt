@@ -35,20 +35,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Event
 import com.ganecamp.domain.enums.EntityType
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Event
 import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.button.ToggleButtons
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 
 @Composable
 fun EventAddFormScreen(navController: NavHostController, entityId: String, entityType: EntityType) {
     val viewModel: EventAddFormViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
-    val events by viewModel.events.collectAsState(initial = emptyList())
-    val eventSaved by viewModel.eventSaved.collectAsState(initial = false)
-    val error by viewModel.error.collectAsState(initial = RepositoryRespond.OK)
+    val events by viewModel.events.collectAsState()
+    val eventSaved by viewModel.eventSaved.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadEntityType(entityId, entityType)
@@ -61,11 +61,8 @@ fun EventAddFormScreen(navController: NavHostController, entityId: String, entit
         }
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {
@@ -76,8 +73,6 @@ fun EventAddFormScreen(navController: NavHostController, entityId: String, entit
             EventFormContent(viewModel, state, events)
         }
     }
-
-
 }
 
 @Composable

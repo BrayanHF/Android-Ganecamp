@@ -38,13 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.domain.enums.AnimalBreed
 import com.ganecamp.domain.enums.AnimalGender
 import com.ganecamp.domain.enums.AnimalState
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Lot
 import com.ganecamp.ui.component.bar.GenericTopBar
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 import com.ganecamp.ui.component.field.NumberTextField
 import com.ganecamp.ui.navigation.screens.AnimalDetailNav
@@ -61,7 +60,7 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
     val state by viewModel.uiState.collectAsState()
     val lots by viewModel.lots.collectAsState(initial = emptyList())
     val animalSaved by viewModel.animalSaved.collectAsState(initial = false)
-    val error by viewModel.error.collectAsState(initial = RepositoryRespond.OK)
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(animalId) {
         viewModel.loadLots()
@@ -85,15 +84,8 @@ fun AnimalFormScreen(navController: NavController, animalId: String?, tag: Strin
         }
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {
@@ -152,7 +144,7 @@ fun AnimalFormContent(
             onStateChange = { viewModel.onStateChange(it) })
 
         DatePickerField(
-            selectedDate = state.birthDate.toInstant(),
+            selectedDate = state.birthDate,
             onDateChange = { viewModel.onBirthDateChange(it) },
             label = R.string.birth_date
         )
@@ -175,7 +167,7 @@ fun AnimalFormContent(
         }
 
         DatePickerField(
-            selectedDate = state.purchaseDate.toInstant(),
+            selectedDate = state.purchaseDate,
             onDateChange = { viewModel.onPurchaseDateChange(it) },
             label = R.string.purchase_date,
             icon = R.drawable.ic_purchase_date
@@ -194,7 +186,7 @@ fun AnimalFormContent(
 
         if (state.animalState == AnimalState.Sold) {
             DatePickerField(
-                selectedDate = state.saleDate.toInstant(),
+                selectedDate = state.saleDate,
                 onDateChange = { viewModel.onSaleDateChange(it) },
                 label = R.string.sale_date,
                 icon = R.drawable.ic_sale_date

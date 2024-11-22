@@ -108,4 +108,5 @@
     <string name="edit_lot">Editar Lote</string>
     <string name="no_items">No hay elementos para mostrar.</string>
     <string name="add_lot">Agregar Lote</string>
+    <string name="error_unknown">Error desconocido</string>
 </resources>

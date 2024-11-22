@@ -27,15 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.navigation.screens.AnimalDetailNav
 import com.ganecamp.ui.navigation.screens.AnimalFormNav
 
 @Composable
 fun ScanScreen(navController: NavController) {
     val viewModel: ScanViewModel = hiltViewModel()
-    val showErrorDialog by viewModel.showErrorDialog.collectAsState(false)
-    val showConfirmDialog by viewModel.showConfirmDialog.collectAsState(false)
+    val showConfirmDialog by viewModel.showConfirmDialog.collectAsState()
     val animalId by viewModel.animalId.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -77,8 +76,8 @@ fun ScanScreen(navController: NavController) {
             })
     }
 
-    if (showErrorDialog) {
-        RepositoryErrorDialog(error) { viewModel.closeErrorDialog() }
+    if (error != null) {
+        ErrorDialog(error!!) { viewModel.dismissError() }
     }
 
     if (showConfirmDialog) {

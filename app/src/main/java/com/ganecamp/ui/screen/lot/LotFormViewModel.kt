@@ -2,10 +2,13 @@ package com.ganecamp.ui.screen.lot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.ganecamp.domain.services.LotService
-import com.google.firebase.Timestamp
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.Lot
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.lot.AddLotUseCase
+import com.ganecamp.domain.usecase.lot.GetLotByIdUseCase
+import com.ganecamp.domain.usecase.lot.UpdateLotUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +17,11 @@ import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
-class LotFormViewModel @Inject constructor(private val lotService: LotService) : ViewModel() {
+class LotFormViewModel @Inject constructor(
+    private val getLotByIdUseCase: GetLotByIdUseCase,
+    private val addLotUseCase: AddLotUseCase,
+    private val updateLotUseCase: UpdateLotUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LotFormState())
     val uiState: StateFlow<LotFormState> = _uiState
@@ -25,35 +32,15 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
     private val _lotSaved = MutableStateFlow(false)
     val lotSaved: StateFlow<Boolean> = _lotSaved
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
+
+    fun dismissError() {
+        _error.value = null
+    }
 
     fun nothingToLoad() {
         _isLoading.value = false
-    }
-
-    fun loadLot(lotId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            val (lot, respond) = lotService.getLotById(lotId)
-            if (respond == RepositoryRespond.OK) {
-                lot?.let { lotFound ->
-                    _uiState.value = LotFormState(
-                        id = lotFound.id,
-                        name = lotFound.name,
-                        purchasedAnimals = lotFound.purchasedAnimals.toString(),
-                        purchaseValue = lotFound.purchaseValue.toString(),
-                        purchaseDate = lotFound.purchaseDate.toInstant(),
-                        saleValue = lotFound.saleValue.toString(),
-                        saleDate = lotFound.saleDate.toInstant(),
-                        sold = lotFound.sold
-                    )
-                }
-                _isLoading.value = false
-            } else {
-                _error.value = respond
-            }
-        }
     }
 
     fun onNameChange(name: String) {
@@ -84,6 +71,31 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
         _uiState.value = _uiState.value.copy(saleDate = saleDate)
     }
 
+    fun loadLot(lotId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            when (val respond = getLotByIdUseCase(lotId)) {
+                is Success -> {
+                    val lot = respond.data
+                    _uiState.value = LotFormState(
+                        id = lot.id,
+                        name = lot.name,
+                        purchasedAnimals = lot.purchasedAnimals.toString(),
+                        purchaseValue = lot.purchaseValue.toString(),
+                        purchaseDate = lot.purchaseDate,
+                        saleValue = lot.saleValue.toString(),
+                        saleDate = lot.saleDate,
+                        sold = lot.sold
+                    )
+                }
+
+                is Error -> _error.value = respond.errorType
+
+            }
+            _isLoading.value = false
+        }
+    }
+
     private fun convertNumberSafely(value: String): Double {
         return try {
             value.toDouble()
@@ -95,32 +107,30 @@ class LotFormViewModel @Inject constructor(private val lotService: LotService) :
     fun saveLot() {
         viewModelScope.launch {
             val currentState = _uiState.value
-
             val lot = Lot(
                 id = currentState.id,
                 name = currentState.name,
                 purchasedAnimals = convertNumberSafely(currentState.purchasedAnimals).toInt(),
                 purchaseValue = convertNumberSafely(currentState.purchaseValue),
-                purchaseDate = Timestamp(currentState.purchaseDate),
+                purchaseDate = currentState.purchaseDate,
                 saleValue = convertNumberSafely(currentState.saleValue),
-                saleDate = Timestamp(currentState.saleDate),
+                saleDate = currentState.saleDate,
                 sold = currentState.sold
             )
 
             if (lot.id == null) {
-                val (newLotId, respond) = lotService.createLot(lot)
-                if (respond == RepositoryRespond.OK) {
-                    _lotSaved.value = true
-                    _uiState.value = _uiState.value.copy(id = newLotId)
-                } else {
-                    _error.value = respond
+                when (val respond = addLotUseCase(lot)) {
+                    is Success -> {
+                        _uiState.value = _uiState.value.copy(id = respond.data)
+                        _lotSaved.value = true
+                    }
+
+                    is Error -> _error.value = respond.errorType
                 }
             } else {
-                val updateRespond = lotService.updateLot(lot)
-                if (updateRespond == RepositoryRespond.OK) {
-                    _lotSaved.value = true
-                } else {
-                    _error.value = updateRespond
+                when (val respond = updateLotUseCase(lot)) {
+                    is Success -> _lotSaved.value = true
+                    is Error -> _error.value = respond.errorType
                 }
             }
         }

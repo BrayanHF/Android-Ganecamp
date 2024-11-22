@@ -35,19 +35,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Vaccine
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Vaccine
 import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.button.ToggleButtons
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 
 @Composable
 fun VaccineAddFormScreen(navController: NavHostController, animalId: String) {
     val viewModel: VaccineAddFormViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
-    val vaccines by viewModel.vaccines.collectAsState(initial = emptyList())
-    val vaccineSaved by viewModel.vaccineSaved.collectAsState(initial = false)
-    val error by viewModel.error.collectAsState(initial = RepositoryRespond.OK)
+    val vaccines by viewModel.vaccines.collectAsState()
+    val vaccineSaved by viewModel.vaccineSaved.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadAnimalId(animalId)
@@ -60,11 +60,8 @@ fun VaccineAddFormScreen(navController: NavHostController, animalId: String) {
         }
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {
@@ -91,8 +88,7 @@ fun VaccineFormContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (vaccines.isNotEmpty()) {
-            ToggleButtons(
-                txtLeftButton = stringResource(id = R.string.new_vaccine),
+            ToggleButtons(txtLeftButton = stringResource(id = R.string.new_vaccine),
                 txtRightButton = stringResource(id = R.string.old_vaccine),
                 onClickLeft = { viewModel.onIsNewChange(it) },
                 onCLickRight = { viewModel.onIsNewChange(!it) })

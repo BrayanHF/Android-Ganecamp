@@ -14,19 +14,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Animal
 import com.ganecamp.ui.component.card.AnimalCard
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.misc.IsLoading
 import com.ganecamp.ui.component.misc.NoRegistered
 import com.ganecamp.ui.navigation.screens.AnimalDetailNav
@@ -36,21 +32,14 @@ fun AnimalScreen(navController: NavHostController) {
     val viewModel: AnimalsViewModel = hiltViewModel()
     val animals by viewModel.animals.collectAsState(emptyList())
     val isLoading by viewModel.isLoading.collectAsState(true)
-    val error by viewModel.error.collectAsState(RepositoryRespond.OK)
+    val error by viewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadAnimals()
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Box(
@@ -86,4 +75,5 @@ fun AnimalList(navController: NavHostController, animals: List<Animal>) {
             }, animal = animal, showLot = true)
         }
     }
+
 }

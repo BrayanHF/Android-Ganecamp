@@ -14,9 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,10 +22,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
 import com.ganecamp.ui.component.bar.GenericTopBar
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.field.DatePickerField
 import com.ganecamp.ui.component.field.NumberTextField
-import com.ganecamp.domain.enums.RepositoryRespond
 
 @Composable
 fun WeightFormScreen(navController: NavController, animalId: String) {
@@ -47,15 +43,8 @@ fun WeightFormScreen(navController: NavController, animalId: String) {
         }
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {

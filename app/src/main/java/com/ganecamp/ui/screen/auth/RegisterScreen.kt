@@ -5,14 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,23 +28,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.layout.SplitScreenLayout
 import com.ganecamp.ui.component.misc.AppLogoWithSlogan
 import com.ganecamp.ui.component.misc.IsLoading
 import com.ganecamp.ui.navigation.screens.AnimalsNav
 import com.ganecamp.ui.navigation.screens.LoginNav
-import com.ganecamp.domain.enums.AuthRespond
 
 @Composable
 fun RegisterScreen(navController: NavController) {
     val viewModel: RegisterViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState()
-    val authRespond by viewModel.authRespond.collectAsState()
+    val success by viewModel.success.collectAsState()
 
     SplitScreenLayout(upperPart = { WelcomeRegister() }, lowerPart = { Register(viewModel) })
 
-    LaunchedEffect(authRespond) {
-        if (authRespond == AuthRespond.OK) {
+    LaunchedEffect(success) {
+        if (success) {
             navController.navigate(AnimalsNav) {
                 popUpTo(LoginNav) { inclusive = true }
             }
@@ -73,7 +71,7 @@ fun Register(viewModel: RegisterViewModel) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val token by viewModel.token.collectAsState()
-    val showErrorDialog by viewModel.showErrorDialog.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     var passwordVisible by remember { mutableStateOf(false) }
     var repeatPassword by remember { mutableStateOf("") }
@@ -206,16 +204,10 @@ fun Register(viewModel: RegisterViewModel) {
         )
     }
 
-    if (showErrorDialog) {
+    // Todo: Generic AlertDialog for errors
+    if (error != null) {
         viewModel.signOut()
-        AlertDialog(containerColor = MaterialTheme.colorScheme.background,
-            onDismissRequest = { viewModel.closeErrorDialog() },
-            title = { /*Todo: Error message for register*/ },
-            text = { /*Todo: Error message description for register*/ },
-            confirmButton = {
-                TextButton(onClick = { viewModel.closeErrorDialog() }) {
-                    Text(stringResource(id = R.string.close))
-                }
-            })
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
+
 }

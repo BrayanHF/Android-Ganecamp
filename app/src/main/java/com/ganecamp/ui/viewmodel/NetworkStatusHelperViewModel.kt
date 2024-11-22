@@ -1,7 +1,7 @@
 package com.ganecamp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.ganecamp.domain.network.NetworkStatusHelper
+import com.ganecamp.data.network.NetworkStatusHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject

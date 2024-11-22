@@ -2,13 +2,17 @@ package com.ganecamp.ui.screen.lot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.data.firibase.model.EventApplied
-import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.domain.services.EventAppliedService
-import com.ganecamp.domain.services.LotService
 import com.ganecamp.domain.enums.EntityType
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.Animal
+import com.ganecamp.domain.model.EventApplied
+import com.ganecamp.domain.model.Lot
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.eventapplied.GetEntityEventsUseCase
+import com.ganecamp.domain.usecase.lot.DeleteLotByIdUseCase
+import com.ganecamp.domain.usecase.lot.GetAnimalsByLotIdUseCase
+import com.ganecamp.domain.usecase.lot.GetLotByIdUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +21,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LotDetailViewModel @Inject constructor(
-    private val lotService: LotService,
-    private val eventAppliedService: EventAppliedService,
+    private val getLotByIdUseCase: GetLotByIdUseCase,
+    private val getEntityEventsUseCase: GetEntityEventsUseCase,
+    private val getAnimalByLodIdUseCase: GetAnimalsByLotIdUseCase,
+    private val deleteLotByIdUseCase: DeleteLotByIdUseCase
 ) : ViewModel() {
 
     private val _lot = MutableStateFlow<Lot?>(null)
@@ -33,18 +39,19 @@ class LotDetailViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
+
+    fun dismissError() {
+        _error.value = null
+    }
 
     fun loadLot(lotId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val (lot, repositoryRespond) = lotService.getLotById(lotId)
-            if (repositoryRespond == RepositoryRespond.OK) {
-                _lot.value = lot
-
-            } else {
-                _error.value = repositoryRespond
+            when (val result = getLotByIdUseCase(lotId)) {
+                is Success -> _lot.value = result.data
+                is Error -> _error.value = result.errorType
             }
             _isLoading.value = false
         }
@@ -52,29 +59,25 @@ class LotDetailViewModel @Inject constructor(
 
     fun loadEvents(lotId: String) {
         viewModelScope.launch {
-            val eventsRespond = eventAppliedService.getEntityEvents(lotId, EntityType.Lot)
-            if (eventsRespond.second == RepositoryRespond.OK) {
-                _events.value = eventsRespond.first
-            } else {
-                _error.value = eventsRespond.second
+            when (val result = getEntityEventsUseCase(lotId, EntityType.Lot)) {
+                is Success -> _events.value = result.data
+                is Error -> _error.value = result.errorType
             }
         }
     }
 
     fun loadAnimals(lotId: String) {
         viewModelScope.launch {
-            val animalsRespond = lotService.getAnimalsByLotId(lotId)
-            if (animalsRespond.second == RepositoryRespond.OK) {
-                _animals.value = animalsRespond.first
-            } else {
-                _error.value = animalsRespond.second
+            when (val result = getAnimalByLodIdUseCase(lotId)) {
+                is Success -> _animals.value = result.data
+                is Error -> _error.value = result.errorType
             }
         }
     }
 
-    fun deleteLot(lotId: String) {
+    fun deleteLot() {
         viewModelScope.launch {
-            lotService.deleteLotById(lotId)
+            deleteLotByIdUseCase(lot.value!!.id!!)
         }
     }
 

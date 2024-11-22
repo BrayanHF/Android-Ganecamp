@@ -2,30 +2,38 @@ package com.ganecamp.ui.screen.animal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.domain.services.AnimalService
-import com.ganecamp.domain.services.EventAppliedService
-import com.ganecamp.domain.services.VaccineAppliedService
-import com.ganecamp.domain.services.WeightService
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.data.firibase.model.EventApplied
-import com.ganecamp.data.firibase.model.VaccineApplied
-import com.ganecamp.data.firibase.model.Weight
-import com.ganecamp.data.firibase.model.WeightValue
 import com.ganecamp.domain.enums.EntityType
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.google.firebase.Timestamp
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.Animal
+import com.ganecamp.domain.model.EventApplied
+import com.ganecamp.domain.model.VaccineApplied
+import com.ganecamp.domain.model.Weight
+import com.ganecamp.domain.model.WeightValue
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.animal.CalculateAnimalAgeUseCase
+import com.ganecamp.domain.usecase.animal.DeleteAnimalByIdUseCase
+import com.ganecamp.domain.usecase.animal.GetAnimalByIdUseCase
+import com.ganecamp.domain.usecase.eventapplied.GetEntityEventsUseCase
+import com.ganecamp.domain.usecase.vaccineapplied.GetVaccinesAppliedUseCase
+import com.ganecamp.domain.usecase.weight.GetAnimalWeightsUseCase
+import com.ganecamp.domain.usecase.weight.LoadWeightValueUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
 class AnimalDetailViewModel @Inject constructor(
-    private val animalService: AnimalService,
-    private val weightService: WeightService,
-    private val vaccineAppliedService: VaccineAppliedService,
-    private val eventAppliedService: EventAppliedService,
+    private val getAnimalByIdUseCase: GetAnimalByIdUseCase,
+    private val calculateAnimalAgeUseCase: CalculateAnimalAgeUseCase,
+    private val getVaccinesAppliedUseCase: GetVaccinesAppliedUseCase,
+    private val getEntityEventsUseCase: GetEntityEventsUseCase,
+    private val getAnimalWeightsUseCase: GetAnimalWeightsUseCase,
+    private val loadWeightValueUseCase: LoadWeightValueUseCase,
+    private val deleteAnimalByIdUseCase: DeleteAnimalByIdUseCase
 ) : ViewModel() {
 
     private val _animal = MutableStateFlow<Animal?>(null)
@@ -34,11 +42,11 @@ class AnimalDetailViewModel @Inject constructor(
     private val _vaccines = MutableStateFlow<List<VaccineApplied>>(emptyList())
     val vaccines: StateFlow<List<VaccineApplied>> = _vaccines
 
-    private val _weights = MutableStateFlow<List<Weight>>(emptyList())
-    val weights: StateFlow<List<Weight>> = _weights
-
     private val _events = MutableStateFlow<List<EventApplied>>(emptyList())
     val events: StateFlow<List<EventApplied>> = _events
+
+    private val _weights = MutableStateFlow<List<Weight>>(emptyList())
+    val weights: StateFlow<List<Weight>> = _weights
 
     private val _ageAnimal = MutableStateFlow<Triple<Int, Int, Int>?>(null)
     val ageAnimal: StateFlow<Triple<Int, Int, Int>?> = _ageAnimal
@@ -49,76 +57,72 @@ class AnimalDetailViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
 
-    fun loadWeights(animalId: String) {
+    fun dismissError() {
+        _error.value = null
+    }
+
+    fun loadAnimal(animalId: String) {
         viewModelScope.launch {
-            val weightRespond = weightService.getAnimalWeights(animalId)
-            if (weightRespond.second == RepositoryRespond.OK) {
-                _weights.value = weightRespond.first
-            } else {
-                _error.value = weightRespond.second
+            _isLoading.value = true
+            when (val animalRespond = getAnimalByIdUseCase(animalId)) {
+                is Success -> {
+                    _animal.value = animalRespond.data
+                    calculateAge(animalRespond.data.birthDate)
+                }
+
+                is Error -> _error.value = animalRespond.errorType
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun loadVaccines(animalId: String) {
+        viewModelScope.launch {
+            when (val vaccinesRespond = getVaccinesAppliedUseCase(animalId)) {
+                is Success -> _vaccines.value = vaccinesRespond.data
+                is Error -> _error.value = vaccinesRespond.errorType
             }
         }
     }
 
     fun loadEvents(animalId: String) {
         viewModelScope.launch {
-            val eventRespond = eventAppliedService.getEntityEvents(animalId, EntityType.Animal)
-            if (eventRespond.second == RepositoryRespond.OK) {
-                _events.value = eventRespond.first
-            } else {
-                _error.value = eventRespond.second
+            when (val eventsRespond = getEntityEventsUseCase(animalId, EntityType.Animal)) {
+                is Success -> _events.value = eventsRespond.data
+                is Error -> _error.value = eventsRespond.errorType
             }
         }
     }
 
-    fun loadVaccines(animalId: String) {
+    fun loadWeights(animalId: String) {
         viewModelScope.launch {
-            val vaccinesRespond = vaccineAppliedService.getVaccinesApplied(animalId)
-            if (vaccinesRespond.second == RepositoryRespond.OK) {
-                _vaccines.value = vaccinesRespond.first
-            } else {
-                _error.value = vaccinesRespond.second
+            when (val weightsRespond = getAnimalWeightsUseCase(animalId)) {
+                is Success -> _weights.value = weightsRespond.data
+                is Error -> _error.value = weightsRespond.errorType
             }
-        }
-    }
-
-    fun loadAnimal(animalId: String) {
-        viewModelScope.launch {
-            val animalRespond = animalService.getAnimalById(animalId)
-            if (animalRespond.second == RepositoryRespond.OK) {
-                _animal.value = animalRespond.first
-                animalRespond.first?.let {
-                    calculateAge(it.birthDate)
-                }
-            } else {
-                _error.value = animalRespond.second
-            }
-            _isLoading.value = false
-        }
-    }
-
-    private fun calculateAge(birthDate: Timestamp) {
-        _ageAnimal.value = animalService.calculateAge(birthDate)
-    }
-
-    fun deleteAnimal(tag: String) {
-        viewModelScope.launch {
-            animalService.deleteAnimalByTag(tag)
         }
     }
 
     fun loadWeightValue() {
         viewModelScope.launch {
-            val weightRespond = weightService.loadWeightValue()
-            if (weightRespond.second == RepositoryRespond.OK) {
-                _weightValue.value = weightRespond.first
-            } else {
-                _error.value = weightRespond.second
+            when (val weightValueRespond = loadWeightValueUseCase.invoke()) {
+                is Success -> _weightValue.value = weightValueRespond.data
+                is Error -> _error.value = weightValueRespond.errorType
             }
         }
+    }
+
+    fun deleteAnimal() {
+        viewModelScope.launch {
+            deleteAnimalByIdUseCase(_animal.value!!.id!!)
+        }
+    }
+
+    private fun calculateAge(birthDate: Instant) {
+        _ageAnimal.value = calculateAnimalAgeUseCase(birthDate)
     }
 
 }

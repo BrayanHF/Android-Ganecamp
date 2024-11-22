@@ -2,12 +2,14 @@ package com.ganecamp.ui.screen.vaccine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.model.AnimalVaccine
-import com.ganecamp.data.firibase.model.Vaccine
-import com.ganecamp.domain.services.VaccineAppliedService
-import com.ganecamp.domain.services.VaccineService
-import com.ganecamp.domain.enums.RepositoryRespond
-import com.google.firebase.Timestamp
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.AnimalVaccine
+import com.ganecamp.domain.model.Vaccine
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.vaccine.AddVaccineUseCase
+import com.ganecamp.domain.usecase.vaccine.GetAllVaccinesUseCase
+import com.ganecamp.domain.usecase.vaccineapplied.ApplyVaccineToAnimalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VaccineAddFormViewModel @Inject constructor(
-    private val vaccineService: VaccineService,
-    private val vaccineAppliedService: VaccineAppliedService
+    private val getAllVaccinesUseCase: GetAllVaccinesUseCase,
+    private val addVaccineUseCase: AddVaccineUseCase,
+    private val applyVaccineToAnimalUseCase: ApplyVaccineToAnimalUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VaccineFormState())
@@ -30,16 +33,18 @@ class VaccineAddFormViewModel @Inject constructor(
     private val _vaccineSaved = MutableStateFlow(false)
     val vaccineSaved: StateFlow<Boolean> = _vaccineSaved
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
+
+    fun dismissError() {
+        _error.value = null
+    }
 
     fun loadVaccines() {
         viewModelScope.launch {
-            val vaccineResponse = vaccineService.getAllVaccines()
-            if (vaccineResponse.second == RepositoryRespond.OK) {
-                _vaccines.value = vaccineResponse.first
-            } else {
-                _error.value = vaccineResponse.second
+            when (val result = getAllVaccinesUseCase()) {
+                is Success -> _vaccines.value = result.data
+                is Error -> _error.value = result.errorType
             }
         }
     }
@@ -68,28 +73,26 @@ class VaccineAddFormViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             if (currentState.isNew) {
-                val vaccineResponse = vaccineService.createVaccine(
-                    Vaccine(
-                        name = currentState.name, description = currentState.description
-                    )
+                val newVaccine = Vaccine(
+                    name = currentState.name, description = currentState.description
                 )
-                if (vaccineResponse.second == RepositoryRespond.OK) {
-                    currentState.vaccineId = vaccineResponse.first!!
-                } else {
-                    _error.value = vaccineResponse.second
-                    return@launch
+                when (val result = addVaccineUseCase(newVaccine)) {
+                    is Success -> currentState.vaccineId = result.data
+                    is Error -> {
+                        _error.value = result.errorType
+                        return@launch
+                    }
                 }
             }
-            val applyVaccineResponse = vaccineAppliedService.applyVaccineAnimal(
-                currentState.animalId, AnimalVaccine(
-                    vaccineId = currentState.vaccineId, date = Timestamp(currentState.date)
-                )
-            )
 
-            if (applyVaccineResponse == RepositoryRespond.OK) {
-                _vaccineSaved.value = true
-            } else {
-                _error.value = applyVaccineResponse
+            val animalVaccine = AnimalVaccine(
+                vaccineId = currentState.vaccineId, date = currentState.date
+            )
+            when (val result = applyVaccineToAnimalUseCase.invoke(
+                animalId = currentState.animalId, animalVaccine = animalVaccine
+            )) {
+                is Success -> _vaccineSaved.value = true
+                is Error -> _error.value = result.errorType
             }
         }
     }

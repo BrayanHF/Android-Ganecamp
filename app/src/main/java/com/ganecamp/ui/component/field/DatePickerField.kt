@@ -25,9 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ganecamp.R
 import com.ganecamp.ui.theme.White
+import com.ganecamp.ui.util.TimeUtil
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,12 +34,11 @@ fun DatePickerField(
     selectedDate: Instant, onDateChange: (Instant) -> Unit, label: Int, icon: Int? = null
 ) {
     val datePickerState = rememberDatePickerState()
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("UTC"))
     val focusManager = LocalFocusManager.current
 
     var showDate by remember { mutableStateOf(false) }
 
-    val formattedDate = formatter.format(selectedDate)
+    val formattedDate = TimeUtil.formatter.format(selectedDate)
 
     Box(
         modifier = Modifier.fillMaxWidth()

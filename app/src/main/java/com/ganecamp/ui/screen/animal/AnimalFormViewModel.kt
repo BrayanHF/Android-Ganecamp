@@ -2,31 +2,33 @@ package com.ganecamp.ui.screen.animal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.data.firibase.model.Lot
-import com.ganecamp.data.firibase.model.Weight
-import com.ganecamp.domain.services.AnimalService
-import com.ganecamp.domain.services.LotService
-import com.ganecamp.domain.services.WeightService
-import com.ganecamp.ui.util.formatNumber
 import com.ganecamp.domain.enums.AnimalBreed
-import com.ganecamp.domain.enums.RepositoryRespond
 import com.ganecamp.domain.enums.AnimalGender
 import com.ganecamp.domain.enums.AnimalState
-import com.google.firebase.Timestamp
+import com.ganecamp.domain.enums.ErrorType
+import com.ganecamp.domain.model.Animal
+import com.ganecamp.domain.model.Lot
+import com.ganecamp.domain.model.Weight
+import com.ganecamp.domain.result.OperationResult.Error
+import com.ganecamp.domain.result.OperationResult.Success
+import com.ganecamp.domain.usecase.animal.AddAnimalUseCase
+import com.ganecamp.domain.usecase.animal.GetAnimalByIdUseCase
+import com.ganecamp.domain.usecase.animal.UpdateAnimalUseCase
+import com.ganecamp.domain.usecase.lot.GetAllLotsUseCase
+import com.ganecamp.ui.util.formatNumber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class AnimalFormViewModel @Inject constructor(
-    private val animalService: AnimalService,
-    private val lotService: LotService,
-    private val weightService: WeightService,
+    private val getAnimalByIdUseCase: GetAnimalByIdUseCase,
+    private val getAllLotsUseCase: GetAllLotsUseCase,
+    private val addAnimalUseCase: AddAnimalUseCase,
+    private val updateAnimalUseCase: UpdateAnimalUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimalFormState())
@@ -38,14 +40,18 @@ class AnimalFormViewModel @Inject constructor(
     private val _animalSaved = MutableStateFlow(false)
     val animalSaved: StateFlow<Boolean> = _animalSaved
 
-    private val _error = MutableStateFlow(RepositoryRespond.OK)
-    val error: StateFlow<RepositoryRespond> = _error
+    private val _error = MutableStateFlow<ErrorType?>(null)
+    val error: StateFlow<ErrorType?> = _error
+
+    fun dismissError() {
+        _error.value = null
+    }
 
     fun loadAnimal(animalId: String) {
         viewModelScope.launch {
-            val animalResponse = animalService.getAnimalById(animalId)
-            if (animalResponse.second == RepositoryRespond.OK) {
-                animalResponse.first?.let { animal ->
+            when (val animalResponse = getAnimalByIdUseCase(animalId)) {
+                is Success -> {
+                    val animal = animalResponse.data
                     _uiState.value = AnimalFormState(
                         id = animal.id,
                         tag = animal.tag,
@@ -61,19 +67,17 @@ class AnimalFormViewModel @Inject constructor(
                         animalState = animal.animalState
                     )
                 }
-            } else {
-                _error.value = animalResponse.second
+
+                is Error -> _error.value = animalResponse.errorType
             }
         }
     }
 
     fun loadLots() {
         viewModelScope.launch {
-            val lotResponse = lotService.getAllLots()
-            if (lotResponse.second == RepositoryRespond.OK) {
-                _lots.value = lotResponse.first
-            } else {
-                _error.value = lotResponse.second
+            when (val lotsResponse = getAllLotsUseCase()) {
+                is Success -> _lots.value = lotsResponse.data
+                is Error -> _error.value = lotsResponse.errorType
             }
         }
     }
@@ -99,7 +103,7 @@ class AnimalFormViewModel @Inject constructor(
     }
 
     fun onBirthDateChange(birthDate: Instant) {
-        _uiState.value = _uiState.value.copy(birthDate = Timestamp(Date.from(birthDate)))
+        _uiState.value = _uiState.value.copy(birthDate = birthDate)
     }
 
     fun onPurchaseValueChange(purchaseValue: String) {
@@ -107,7 +111,7 @@ class AnimalFormViewModel @Inject constructor(
     }
 
     fun onPurchaseDateChange(purchaseDate: Instant) {
-        _uiState.value = _uiState.value.copy(purchaseDate = Timestamp(Date.from(purchaseDate)))
+        _uiState.value = _uiState.value.copy(purchaseDate = purchaseDate)
     }
 
     fun onSaleValueChange(saleValue: String) {
@@ -115,7 +119,7 @@ class AnimalFormViewModel @Inject constructor(
     }
 
     fun onSaleDateChange(saleDate: Instant) {
-        _uiState.value = _uiState.value.copy(saleDate = Timestamp(Date.from(saleDate)))
+        _uiState.value = _uiState.value.copy(saleDate = saleDate)
     }
 
     fun onStateChange(animalState: AnimalState) {
@@ -160,29 +164,15 @@ class AnimalFormViewModel @Inject constructor(
             )
 
             if (animal.id == null) {
-                val createdRespond = animalService.createAnimal(animal)
-                if (createdRespond == RepositoryRespond.OK) {
-                    val newAnimalRespond = animalService.getAnimalByTag(currentState.tag)
-                    if (newAnimalRespond.second == RepositoryRespond.OK) {
-                        newAnimalRespond.first?.let { newAnimal ->
-                            weightService.createWeight(
-                                newAnimal.id!!, Weight(weight = weight, date = Timestamp.now())
-                            )
-                            _uiState.value = _uiState.value.copy(id = newAnimal.id!!)
-                            _animalSaved.value = true
-                        }
-                    } else {
-                        _error.value = newAnimalRespond.second
-                    }
-                } else {
-                    _error.value = createdRespond
+                val registerWeight = Weight(weight = weight, date = Instant.now())
+                when (val animalResponse = addAnimalUseCase(animal, registerWeight)) {
+                    is Success -> _animalSaved.value = true
+                    is Error -> _error.value = animalResponse.errorType
                 }
             } else {
-                val updateRespond = animalService.updateAnimal(animal)
-                if (updateRespond == RepositoryRespond.OK) {
-                    _animalSaved.value = true
-                } else {
-                    _error.value = updateRespond
+                when (val animalResponse = updateAnimalUseCase(animal)) {
+                    is Success -> _animalSaved.value = true
+                    is Error -> _error.value = animalResponse.errorType
                 }
             }
         }
@@ -197,11 +187,11 @@ data class AnimalFormState(
     val lotId: String? = null,
     val animalGender: AnimalGender = AnimalGender.Male,
     val animalBreed: AnimalBreed = AnimalBreed.ZEBU,
-    val birthDate: Timestamp = Timestamp.now(),
+    val birthDate: Instant = Instant.now(),
     val purchaseValue: String = "",
-    val purchaseDate: Timestamp = Timestamp.now(),
+    val purchaseDate: Instant = Instant.now(),
     val saleValue: String = "",
-    val saleDate: Timestamp = Timestamp.now(),
+    val saleDate: Instant = Instant.now(),
     val animalState: AnimalState = AnimalState.Healthy,
     val weight: String = ""
 )

@@ -17,9 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,16 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
-import com.ganecamp.data.firibase.model.Animal
-import com.ganecamp.data.firibase.model.EventApplied
-import com.ganecamp.data.firibase.model.Lot
 import com.ganecamp.domain.enums.EntityType
-import com.ganecamp.domain.enums.RepositoryRespond
+import com.ganecamp.domain.model.Animal
+import com.ganecamp.domain.model.EventApplied
+import com.ganecamp.domain.model.Lot
 import com.ganecamp.ui.component.bar.GenericTopBar
 import com.ganecamp.ui.component.button.ActionButton
 import com.ganecamp.ui.component.card.AnimalCard
 import com.ganecamp.ui.component.card.InfoCard
-import com.ganecamp.ui.component.dialog.RepositoryErrorDialog
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.layout.SectionWithLazyColumn
 import com.ganecamp.ui.component.layout.SectionWithLazyRow
 import com.ganecamp.ui.component.layout.TwoColumns
@@ -55,8 +51,8 @@ fun LotDetailScreen(navController: NavController, lotId: String) {
     val viewModel: LotDetailViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState(initial = true)
     val lot by viewModel.lot.collectAsState()
-    val events: List<EventApplied> by viewModel.events.collectAsState()
-    val animals: List<Animal> by viewModel.animals.collectAsState()
+    val events by viewModel.events.collectAsState()
+    val animals by viewModel.animals.collectAsState()
     val error by viewModel.error.collectAsState()
 
     LaunchedEffect(lotId) {
@@ -65,15 +61,8 @@ fun LotDetailScreen(navController: NavController, lotId: String) {
         viewModel.loadAnimals(lotId)
     }
 
-    var showError by remember { mutableStateOf(false) }
-    LaunchedEffect(error) {
-        if (error != RepositoryRespond.OK) {
-            showError = true
-        }
-    }
-
-    if (showError) {
-        RepositoryErrorDialog(error = error, onDismiss = { showError = false })
+    if (error != null) {
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
     Scaffold(topBar = {
@@ -101,10 +90,8 @@ fun LotDetailScreen(navController: NavController, lotId: String) {
                     ActionButton(
                         text = stringResource(R.string.delete_lot),
                         onClick = {
-                            lot.id?.let { lotId ->
-                                viewModel.deleteLot(lotId)
-                                navController.popBackStack()
-                            }
+                            viewModel.deleteLot()
+                            navController.popBackStack()
                         },
                         color = Red,
                         modifier = Modifier
@@ -131,7 +118,7 @@ fun LotDetailContent(
         cardItem = { event ->
             InfoCard(
                 onClick = { //Todo: Add navigation to event detail
-                }, info = event.title, date = event.date.toInstant()
+                }, info = event.title, date = event.date
             )
         },
         textButtonAdd = stringResource(R.string.add_event),
@@ -198,7 +185,7 @@ fun LotInfo(lotDetail: Lot, navController: NavController) {
 
             TwoColumns(
                 titleLeft = stringResource(R.string.purchase_date),
-                valueLeft = TimeUtil.formatter.format(lotDetail.purchaseDate.toInstant()),
+                valueLeft = TimeUtil.formatter.format(lotDetail.purchaseDate),
                 titleRight = stringResource(R.string.purchase_value),
                 valueRight = formatNumber(lotDetail.purchaseValue.toString())
             )
@@ -206,7 +193,7 @@ fun LotInfo(lotDetail: Lot, navController: NavController) {
             if (lotDetail.sold) {
                 TwoColumns(
                     titleLeft = stringResource(R.string.sale_date),
-                    valueLeft = TimeUtil.formatter.format(lotDetail.saleDate.toInstant()),
+                    valueLeft = TimeUtil.formatter.format(lotDetail.saleDate),
                     titleRight = stringResource(R.string.sale_value),
                     valueRight = formatNumber(lotDetail.saleValue.toString())
                 )

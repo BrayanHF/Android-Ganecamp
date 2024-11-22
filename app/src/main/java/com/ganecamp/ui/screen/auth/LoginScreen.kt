@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,22 +29,22 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ganecamp.R
+import com.ganecamp.ui.component.dialog.ErrorDialog
 import com.ganecamp.ui.component.layout.SplitScreenLayout
 import com.ganecamp.ui.component.misc.AppLogoWithSlogan
 import com.ganecamp.ui.component.misc.IsLoading
 import com.ganecamp.ui.navigation.screens.AnimalsNav
 import com.ganecamp.ui.navigation.screens.LoginNav
 import com.ganecamp.ui.navigation.screens.RegisterNav
-import com.ganecamp.domain.enums.AuthRespond
 
 @Composable
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState()
-    val authRespond by viewModel.authRespond.collectAsState()
+    val success by viewModel.success.collectAsState()
 
-    LaunchedEffect(authRespond) {
-        if (authRespond == AuthRespond.OK) {
+    LaunchedEffect(success) {
+        if (success) {
             navController.navigate(AnimalsNav) {
                 popUpTo(LoginNav) { inclusive = true }
             }
@@ -69,7 +68,7 @@ fun WelcomeLogin() {
 fun Login(navController: NavController, viewModel: LoginViewModel) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
-    val showErrorDialog by viewModel.showErrorDialog.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -141,17 +140,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel) {
         Text(text = stringResource(id = R.string.no_account))
     }
 
-    if (showErrorDialog) {
+    if (error != null) {
         viewModel.signOut()
-        AlertDialog(containerColor = MaterialTheme.colorScheme.background,
-            onDismissRequest = { viewModel.closeErrorDialog() },
-            title = { /*Todo: Error message for login*/ },
-            text = { /*Todo: Error message description for login*/ },
-            confirmButton = {
-                TextButton(onClick = { viewModel.closeErrorDialog() }) {
-                    Text(stringResource(id = R.string.close))
-                }
-            })
+        ErrorDialog(error = error!!, onDismiss = { viewModel.dismissError() })
     }
 
 }
